@@ -1,0 +1,14 @@
+GitHub 업로드 순서
+
+1. 새 저장소 생성
+2. 이 폴더 안 파일/폴더를 전부 업로드
+3. Settings > Pages > Deploy from a branch
+4. Branch: main / root 선택
+5. Save
+6. 생성된 주소에서 확인
+
+엑셀 수정 시
+- data/info_search_data.xlsx 교체 업로드
+
+파밍 이미지 수정 시
+- images/farm/ 안 파일 교체 업로드

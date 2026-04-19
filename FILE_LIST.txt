@@ -1,0 +1,22 @@
+파일 목록
+
+index.html
+README.txt
+FILE_LIST.txt
+
+data/info_search_data.xlsx
+
+images/home.jpeg
+images/start.jpeg
+images/control.jpeg
+images/class.jpeg
+images/faq.jpeg
+images/extra.jpeg
+
+images/farm/01-skyfield.jpeg
+images/farm/02-blackdragon.jpeg
+images/farm/03-icewarehouse.jpeg
+images/farm/04-floatingaltar.jpeg
+images/farm/05-pirateship.jpeg
+images/farm/06-destinygrave.jpeg
+images/farm/07-masktheater.jpeg

@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blade & Soul Beginner Launcher Guide</title>
+  <style>
+    :root {
+      --line:rgba(124,156,255,.18);
+      --text:#eef2ff;
+      --muted:#99a3c4;
+      --accent:#78a6ff;
+      --accent-2:#8b6dff;
+      --glow:0 0 0 1px rgba(120,166,255,.15), 0 0 24px rgba(79,119,255,.14);
+      --radius:18px;
+      --content-bg:#f4f5f7;
+      --content-text:#1d2333;
+      --content-muted:#59627c;
+      --content-line:#dde2ef;
+    }
+
+    * { box-sizing:border-box; }
+    html, body { margin:0; min-height:100%; }
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(139,109,255,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(120,166,255,.16), transparent 32%),
+        linear-gradient(180deg, #080a10 0%, #0c1120 55%, #090b12 100%);
+      color:var(--text);
+      font-family:"Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+
+    body::before {
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size:42px 42px;
+      mask-image:linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.45));
+      opacity:.35;
+    }
+
+    .app {
+      display:grid;
+      grid-template-columns:280px 1fr 320px;
+      gap:20px;
+      min-height:100vh;
+      padding:22px;
+    }
+
+    .panel {
+      background:linear-gradient(180deg, rgba(19,24,37,.94), rgba(11,14,24,.94));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--glow);
+      backdrop-filter:blur(12px);
+    }
+
+    .sidebar, .rightbar {
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .logo {
+      padding:18px;
+      border-radius:16px;
+      background:linear-gradient(135deg, rgba(120,166,255,.16), rgba(139,109,255,.09));
+      border:1px solid rgba(120,166,255,.22);
+    }
+    .logo small { color:#b7c3ea; letter-spacing:.22em; display:block; margin-bottom:8px; }
+    .logo h1 { font-size:28px; margin:0; line-height:1.05; }
+    .logo p { color:var(--muted); margin:10px 0 0; font-size:14px; }
+
+    .nav { display:flex; flex-direction:column; gap:10px; }
+    .nav button, .search-result-btn {
+      all:unset;
+      cursor:pointer;
+      padding:14px 14px 14px 16px;
+      border-radius:14px;
+      border:1px solid transparent;
+      color:#dfe6ff;
+      background:rgba(255,255,255,.02);
+      transition:.22s ease;
+      display:block;
+    }
+    .nav button:hover,
+    .nav button.active,
+    .search-result-btn:hover,
+    .search-result-btn.active {
+      transform:translateY(-1px);
+      background:linear-gradient(90deg, rgba(120,166,255,.17), rgba(139,109,255,.12));
+      border-color:rgba(120,166,255,.24);
+      box-shadow:0 8px 24px rgba(87,116,255,.16);
+    }
+    .nav button span,
+    .search-result-btn span {
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+      line-height:1.45;
+    }
+
+    .side-footer {
+      margin-top:auto;
+      padding:14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05);
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .main { display:flex; flex-direction:column; gap:18px; }
+
+    .hero {
+      position:relative;
+      overflow:hidden;
+      padding:28px;
+      min-height:286px;
+      display:grid;
+      grid-template-columns:minmax(320px, 1.1fr) minmax(360px, .9fr);
+      gap:18px;
+      background:
+        linear-gradient(120deg, rgba(7,11,20,.92) 0%, rgba(7,11,20,.44) 40%, rgba(11,14,24,.2) 100%),
+        radial-gradient(circle at 80% 20%, rgba(120,166,255,.28), transparent 30%),
+        radial-gradient(circle at 70% 80%, rgba(139,109,255,.22), transparent 26%),
+        linear-gradient(135deg, #111827 0%, #0f172a 45%, #111827 100%);
+      border-radius:22px;
+      border:1px solid var(--line);
+      box-shadow:var(--glow);
+      align-items:start;
+    }
+    .hero::after {
+      content:"BLADE & SOUL";
+      position:absolute;
+      right:22px;
+      top:18px;
+      font-size:13px;
+      letter-spacing:.32em;
+      color:rgba(255,255,255,.35);
+    }
+    .hero-copy { max-width:580px; z-index:1; align-self:end; }
+    .eyebrow {
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:#dfe8ff;
+      border:1px solid rgba(120,166,255,.22);
+      background:rgba(120,166,255,.08);
+      margin-bottom:14px;
+    }
+    .hero h2 { font-size:38px; line-height:1.12; margin:0; }
+    .hero p { font-size:15px; color:#c3cbed; line-height:1.72; max-width:520px; margin:12px 0 18px; }
+
+    .hero-actions { display:flex; flex-wrap:wrap; gap:10px; }
+    .cta, .ghost {
+      all:unset;
+      cursor:pointer;
+      padding:12px 16px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:14px;
+      text-align:center;
+    }
+    .cta {
+      background:linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow:0 10px 28px rgba(97,126,255,.32);
+    }
+    .ghost {
+      border:1px solid rgba(120,166,255,.22);
+      color:#dfe8ff;
+      background:rgba(255,255,255,.03);
+    }
+
+    .content-shell {
+      min-height:420px;
+      padding:0;
+      overflow:hidden;
+      background:var(--content-bg);
+      border:1px solid rgba(120,166,255,.14);
+    }
+    .content-head {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-end;
+      padding:22px 24px 16px;
+      background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(244,245,247,.94));
+      border-bottom:1px solid var(--content-line);
+      color:var(--content-text);
+    }
+    .content-head h3 { margin:0; font-size:28px; line-height:1.15; }
+    .content-head p { margin:8px 0 0; color:var(--content-muted); font-size:14px; }
+    .content-meta {
+      font-size:12px;
+      color:#6f7893;
+      background:#fff;
+      border:1px solid var(--content-line);
+      border-radius:999px;
+      padding:7px 11px;
+      white-space:nowrap;
+    }
+    .content-body {
+      padding:24px;
+      color:var(--content-text);
+      background:var(--content-bg);
+      min-height:460px;
+    }
+
+    .image-wrap {
+      display:grid;
+      gap:14px;
+    }
+    .image-card {
+      border-radius:18px;
+      border:1px solid rgba(120,166,255,.18);
+      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
+      box-shadow:0 10px 28px rgba(17,28,65,.18);
+      overflow:hidden;
+    }
+    .image-card-head {
+      padding:14px 16px;
+      border-bottom:1px solid rgba(120,166,255,.12);
+      color:#eef2ff;
+      font-size:14px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+    }
+    .guide-image {
+      width:100%;
+      display:block;
+      background:#0b1020;
+    }
+    .image-note {
+      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
+      border:1px solid rgba(120,166,255,.18);
+      border-radius:16px;
+      padding:16px;
+      color:#aab6da;
+      line-height:1.75;
+      font-size:14px;
+    }
+    .image-note code {
+      background:rgba(255,255,255,.08);
+      padding:2px 6px;
+      border-radius:8px;
+      color:#e6edff;
+    }
+
+    .status {
+      padding:16px;
+      border-radius:14px;
+      background:linear-gradient(135deg, rgba(120,166,255,.12), rgba(139,109,255,.08));
+      border:1px solid rgba(120,166,255,.18);
+    }
+    .status strong { display:block; font-size:14px; margin-bottom:8px; }
+    .status p { margin:0; color:#dbe4ff; line-height:1.65; font-size:14px; }
+
+    .card { padding:16px; }
+    .card h3 { margin:0 0 12px; }
+    .tips .tip {
+      padding:12px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:14px;
+      line-height:1.6;
+      color:#dfe6ff;
+    }
+    .tips .tip:last-child { border-bottom:0; }
+    .checklist { display:grid; gap:10px; }
+    .check {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      background:rgba(255,255,255,.025);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:12px;
+      padding:12px 13px;
+    }
+    .check b { font-size:13px; color:#b9c5ea; min-width:56px; }
+    .check p { margin:0; color:#e6ebff; font-size:14px; line-height:1.55; }
+
+    .footerbar {
+      margin-top:6px;
+      padding:12px 16px;
+      border-radius:14px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05);
+      color:#c8d1f0;
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    
+    .drop-tools {
+      display:grid;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .drop-toolbar {
+      display:grid;
+      grid-template-columns:1fr 180px auto;
+      gap:10px;
+      align-items:center;
+    }
+    .drop-input, .drop-file {
+      width:100%;
+      border:1px solid var(--content-line);
+      background:#fff;
+      color:var(--content-text);
+      border-radius:12px;
+      padding:12px 14px;
+      outline:none;
+      font-size:14px;
+    }
+    .drop-file {
+      padding:10px 12px;
+    }
+    .drop-btn {
+      all:unset;
+      cursor:pointer;
+      padding:12px 16px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:14px;
+      text-align:center;
+      color:#fff;
+      background:linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow:0 10px 28px rgba(97,126,255,.18);
+    }
+    .drop-meta {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      color:var(--content-muted);
+      font-size:13px;
+    }
+    .drop-table-wrap {
+      overflow:auto;
+      border:1px solid var(--content-line);
+      border-radius:14px;
+      background:#fff;
+    }
+    .drop-table {
+      width:100%;
+      border-collapse:collapse;
+      min-width:760px;
+      font-size:14px;
+    }
+    .drop-table th, .drop-table td {
+      padding:12px 14px;
+      border-bottom:1px solid var(--content-line);
+      text-align:left;
+      vertical-align:top;
+      color:var(--content-text);
+    }
+    .drop-table th {
+      background:#f6f8fc;
+      color:#445070;
+      font-size:12px;
+      letter-spacing:.04em;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    .drop-table tr:last-child td {
+      border-bottom:0;
+    }
+    .drop-empty {
+      padding:18px;
+      border:1px dashed var(--content-line);
+      border-radius:14px;
+      background:#fff;
+      color:var(--content-muted);
+      line-height:1.7;
+      font-size:14px;
+    }
+    .drop-tag {
+      display:inline-flex;
+      align-items:center;
+      padding:5px 10px;
+      border-radius:999px;
+      background:#f1f5ff;
+      border:1px solid #dbe4ff;
+      color:#4a5ea8;
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+
+    .drop-fixed-wrap {
+      display:grid;
+      gap:18px;
+    }
+    .drop-search-box {
+      display:grid;
+      gap:10px;
+      padding:18px;
+      border:1px solid var(--content-line);
+      border-radius:16px;
+      background:#fff;
+      box-shadow:0 10px 26px rgba(19,35,80,.04);
+    }
+    .drop-search-input {
+      width:100%;
+      border:1px solid var(--content-line);
+      background:#fff;
+      color:var(--content-text);
+      border-radius:12px;
+      padding:13px 15px;
+      outline:none;
+      font-size:14px;
+    }
+    .dungeon-card-grid {
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+    .dungeon-card {
+      all:unset;
+      display:block;
+      cursor:pointer;
+      border-radius:18px;
+      border:1px solid #27304a;
+      background:linear-gradient(180deg, #08111f, #091624);
+      color:#eef2ff;
+      padding:18px;
+      box-shadow:0 10px 28px rgba(17,28,65,.18);
+      transition:.2s ease;
+    }
+    .dungeon-card:hover, .dungeon-card.active {
+      transform:translateY(-1px);
+      border-color:#5c77d8;
+      box-shadow:0 12px 30px rgba(72,98,208,.22);
+    }
+    .dungeon-card-title {
+      font-size:18px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+    .dungeon-card-desc {
+      font-size:13px;
+      line-height:1.6;
+      color:#b9c4e9;
+    }
+    .drop-panel {
+      display:grid;
+      gap:14px;
+    }
+    .drop-panel-head {
+      padding:22px 24px;
+      border-radius:18px;
+      background:linear-gradient(180deg, #08111f, #091624);
+      border:1px solid #253055;
+      color:#eef2ff;
+      box-shadow:0 10px 28px rgba(17,28,65,.18);
+    }
+    .drop-panel-head h4 {
+      margin:0;
+      font-size:24px;
+      text-align:center;
+    }
+    .drop-panel-head p {
+      margin:10px 0 0;
+      font-size:14px;
+      color:#c9d3f3;
+      line-height:1.65;
+      text-align:left;
+    }
+    .video-links {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .video-link {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid var(--content-line);
+      color:#324169;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+    }
+    .drop-grade-table-wrap {
+      overflow:auto;
+      border:1px solid #8c5716;
+      background:#1a0d05;
+    }
+    .drop-grade-table {
+      width:100%;
+      min-width:760px;
+      border-collapse:collapse;
+      table-layout:fixed;
+      background:#1a0d05;
+      color:#fff3d8;
+    }
+    .drop-grade-table th,
+    .drop-grade-table td {
+      border:1px solid #8c5716;
+      padding:12px 10px;
+      text-align:center;
+      vertical-align:top;
+    }
+    .drop-grade-table thead th {
+      background:#2a1407;
+      font-size:14px;
+      font-weight:800;
+      color:#ffd687;
+    }
+    .drop-grade-table .grade-name {
+      background:#2a1407;
+      font-weight:800;
+      color:#fff1c7;
+    }
+    .drop-item-list {
+      display:grid;
+      gap:10px;
+      justify-items:center;
+    }
+    .drop-item-box {
+      display:grid;
+      gap:6px;
+      width:100%;
+      min-height:56px;
+      align-content:start;
+    }
+    .drop-item-name {
+      font-weight:700;
+      color:#fff;
+      line-height:1.45;
+      word-break:keep-all;
+    }
+    .drop-item-sub {
+      font-size:12px;
+      color:#d0b48d;
+    }
+    .drop-empty-note {
+      padding:18px;
+      border:1px dashed var(--content-line);
+      border-radius:14px;
+      background:#fff;
+      color:var(--content-muted);
+      line-height:1.7;
+      font-size:14px;
+    }
+
+    
+    .farm-route-wrap {
+      display:grid;
+      gap:18px;
+    }
+    .farm-route-head,
+    .farm-image-head {
+      padding:18px 20px;
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
+      border:1px solid rgba(120,166,255,.18);
+      color:#eef2ff;
+      box-shadow:0 10px 28px rgba(17,28,65,.18);
+    }
+    .farm-route-head h4 {
+      margin:0 0 8px;
+      font-size:22px;
+    }
+    .farm-route-head p,
+    .farm-image-head span {
+      margin:0;
+      font-size:14px;
+      color:#b9c4e9;
+      line-height:1.7;
+    }
+    .farm-route-nav {
+      display:grid;
+      grid-template-columns:repeat(13, minmax(0, 1fr));
+      align-items:center;
+      gap:10px;
+    }
+    .farm-route-btn {
+      all:unset;
+      cursor:pointer;
+      padding:15px 10px;
+      border-radius:14px;
+      border:1px solid rgba(120,166,255,.18);
+      background:linear-gradient(180deg, rgba(16,24,42,.96), rgba(10,16,30,.96));
+      color:#eef2ff;
+      font-size:14px;
+      font-weight:700;
+      box-shadow:0 8px 20px rgba(13,20,44,.12);
+      transition:.18s ease;
+      text-align:center;
+      min-height:52px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      line-height:1.35;
+      word-break:keep-all;
+    }
+    .farm-route-btn:hover,
+    .farm-route-btn.active {
+      transform:translateY(-1px);
+      border-color:rgba(120,166,255,.36);
+      background:linear-gradient(180deg, rgba(24,35,62,.98), rgba(14,22,40,.98));
+      box-shadow:0 12px 26px rgba(49,78,180,.24);
+    }
+    .farm-route-arrow {
+      color:#8fa2d2;
+      font-size:20px;
+      font-weight:800;
+      line-height:1;
+      user-select:none;
+      text-align:center;
+    }
+    .farm-image-panel {
+      display:none;
+      gap:14px;
+    }
+    .farm-image-panel.show {
+      display:grid;
+    }
+    .farm-image-wrap {
+      border-radius:18px;
+      border:1px solid rgba(120,166,255,.18);
+      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
+      overflow:hidden;
+      box-shadow:0 10px 28px rgba(17,28,65,.18);
+    }
+    .farm-image {
+      display:block;
+      width:100%;
+      height:auto;
+      background:#0b1020;
+    }
+    .farm-image-note {
+      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
+      border:1px solid rgba(120,166,255,.18);
+      border-radius:14px;
+      padding:16px;
+      color:#aab6da;
+      line-height:1.7;
+      font-size:14px;
+    }
+    .farm-image-note code {
+      background:rgba(255,255,255,.08);
+      padding:2px 6px;
+      border-radius:8px;
+      color:#e6edff;
+    }
+
+    @media (max-width: 1280px) {
+      .app { grid-template-columns:240px 1fr; }
+      .rightbar { grid-column:1 / -1; }
+    }
+    @media (max-width: 1000px) {
+      .hero { grid-template-columns:1fr; }
+      .search-controls { grid-template-columns:1fr; }
+      .drop-toolbar { grid-template-columns:1fr; }
+      .dungeon-card-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width: 860px) {
+      .app { grid-template-columns:1fr; padding:14px; }
+      .hero h2 { font-size:30px; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel sidebar">
+      <div class="logo">
+        <small>BEGINNER GUIDE</small>
+        <h1>회상서버<br>초보자 가이드</h1>
+        <p>제작 : 혼천교 샵문파</p>
+      </div>
+
+      <nav class="nav">
+        <button class="active" data-target="home">캐릭생성&기초세팅<span>캐릭터 생성 / 기본 아이템 세팅</span></button>
+        <button data-target="start">초반파밍순서<span>장비 업그레이드 / 파밍 루트</span></button>
+        <button data-target="control">아이템드랍정보<span>던전별 드랍 아이템 정보</span></button>
+        <button data-target="class">문파정보<span>세력별 대표 문파 안내</span></button>
+        <button data-target="faq">게임설정<span>UI설정 등 게임설정방법</span></button>
+        <button data-target="extra">FAQ<span>원하는 새 메인 메뉴</span></button>
+      </nav>
+
+      <div class="side-footer">
+        <a href="https://example.com" target="_blank" rel="noopener noreferrer" style="display:block; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.025); color:#dfe6ff; text-decoration:none; font-size:13px; margin-bottom:8px;">
+          자동사냥 파일
+          <span style="display:block; color:#99a3c4; font-size:11px; margin-top:4px;">외부 링크 1</span>
+        </a>
+        <a href="https://example.com" target="_blank" rel="noopener noreferrer" style="display:block; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.025); color:#dfe6ff; text-decoration:none; font-size:13px;">
+          오픈채팅 / 디스코드
+          <span style="display:block; color:#99a3c4; font-size:11px; margin-top:4px;">외부 링크 2</span>
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">Blade & Soul 회상서버</span>
+          <h2>Blade & Soul 회상서버<br>입문자를 위한 가이드!!</h2>
+          <p>회상서버를 처음접하시는 분들을위한 가이드입니다.</p>
+          <div class="hero-actions">
+            <button class="cta" data-jump="home">빠른 시작 보기</button>
+            
+          </div>
+        </div>
+      </section>
+
+      <section class="panel content-shell">
+        <div class="content-head">
+          <div>
+            <h3 id="contentTitle">캐릭생성 & 기초세팅</h3>
+            <p id="contentSubtitle">블소 처음하시는분들을 위한 케릭 생성부터 기본세팅까지!</p>
+          </div>
+          <div class="content-meta" id="contentCategory">SECTION : SETTING</div>
+        </div>
+        <div class="content-body" id="contentBody"></div>
+      </section>
+
+      <div class="footerbar panel">
+        <div></div>
+        <div id="rotatingTip">TIP: 케릭터는 이쁘게 꾸미기!!!</div>
+      </div>
+    </main>
+
+    <aside class="panel rightbar">
+      <div class="status">
+        <strong>회상서버 가이드</strong>
+        <p>디스코드 게시판에 가이드가있긴한데 한곳에 모아서 보기 편하도록 제작했습니다.</p>
+      </div>
+
+      <article class="panel card tips">
+        <h3>유용한 팁</h3>
+        <div class="tip">홍보는 매일하는것이 좋다!</div>
+        <div class="tip">직업은 신중하게~ 내가 재미있는걸로 하자</div>
+        <div class="tip">신석사용처는 신중하게 결정하고 사용하자</div>
+      </article>
+    </aside>
+  </div>
+
+  <script>
+    const menuButtons = document.querySelectorAll('.nav button');
+    const jumpers = document.querySelectorAll('[data-jump]');
+    const contentTitle = document.getElementById('contentTitle');
+    const contentSubtitle = document.getElementById('contentSubtitle');
+    const contentCategory = document.getElementById('contentCategory');
+    const contentBody = document.getElementById('contentBody');
+    const rotatingTip = document.getElementById('rotatingTip');
+
+    const contentMap = {
+      home: {
+        category: 'SETTING',
+        title: '캐릭생성 & 기초세팅',
+        subtitle: '처음 시작하는 유저가 가장 먼저 확인해야 하는 기본 세팅 안내(출처:블루님)',
+        image: 'images/home.jpeg'
+      },
+      start: {
+        category: 'FARM',
+        title: '초반 파밍 순서',
+        subtitle: '초반아이템 파밍을 위한 가이드 라인입니다..',
+        type: 'farmRoute',
+        image: 'images/start.jpeg'
+      },
+      control: {
+        category: 'DROP',
+        title: '아이템 드랍 정보',
+        subtitle: '던전별 드랍리스트 확인할 수 있습니다.(출처:다운님, 블루님)',
+        type: 'dropFixed',
+        image: 'images/control.jpeg'
+      },
+      class: {
+        category: 'CLAN',
+        title: '문파 정보',
+        subtitle: '세력별 대표 문파 소개',
+        image: 'images/class.jpeg'
+      },
+      faq: {
+        category: '유용한정보',
+        title: 'UI설정등 유용한정보',
+        subtitle: 'UI설정등 게임설정법이외 유용한정보',
+        image: 'images/faq.jpeg'
+      },
+      extra: {
+        category: 'FAQ',
+        title: '자주 묻는 질문(출처 : 블루님)',
+        subtitle: '회상서버 초보자가 가장 많이 물어보는 질문 정리',
+        image: 'images/extra.jpeg'
+      }
+    };
+
+    function setActiveMenu(id) {
+      menuButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.target === id));
+    }
+
+
+    
+    let fixedDropData = [];
+    let fixedDropDataLoaded = false;
+    let fixedDropDataError = '';
+
+    function mapRowsBySheet(jsonRows, type) {
+      if (type === 'dungeons') {
+        return jsonRows.map(row => ({
+          id: String(row['던전ID'] || row['id'] || '').trim(),
+          name: String(row['던전명'] || row['name'] || '').trim(),
+          mainImage: String(row['메인이미지'] || row['mainImage'] || '').trim(),
+          description: String(row['설명'] || row['description'] || '').trim(),
+          videos: [],
+          dropsByGrade: {}
+        })).filter(row => row.id);
+      }
+
+      if (type === 'videos') {
+        return jsonRows.map(row => ({
+          dungeonId: String(row['던전ID'] || row['dungeonId'] || '').trim(),
+          title: String(row['영상제목'] || row['title'] || '').trim(),
+          url: String(row['영상링크'] || row['url'] || '').trim()
+        })).filter(row => row.dungeonId);
+      }
+
+      return jsonRows.map(row => ({
+        dungeonId: String(row['던전ID'] || row['dungeonId'] || '').trim(),
+        grade: String(row['등급'] || row['grade'] || '기타').trim(),
+        item: String(row['아이템'] || row['item'] || '').trim(),
+        image: String(row['이미지2'] || row['image'] || '').trim()
+      })).filter(row => row.dungeonId);
+    }
+
+    async function loadFixedDropData() {
+      if (fixedDropDataLoaded) return fixedDropData;
+      try {
+        const response = await fetch('./data/info_search_data.xlsx');
+        if (!response.ok) {
+          throw new Error('엑셀 파일을 불러오지 못했습니다.');
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+
+        const dungeonSheet = workbook.Sheets['던전목록'];
+        const videoSheet = workbook.Sheets['공략영상'];
+        const dropSheet = workbook.Sheets['드랍목록'];
+
+        if (!dungeonSheet || !videoSheet || !dropSheet) {
+          throw new Error('엑셀 시트 이름을 확인해주세요. (던전목록 / 공략영상 / 드랍목록 필요)');
+        }
+
+        const dungeonRows = mapRowsBySheet(XLSX.utils.sheet_to_json(dungeonSheet, { defval: '' }), 'dungeons');
+        const videoRows = mapRowsBySheet(XLSX.utils.sheet_to_json(videoSheet, { defval: '' }), 'videos');
+        const dropRows = mapRowsBySheet(XLSX.utils.sheet_to_json(dropSheet, { defval: '' }), 'drops');
+
+        const dungeonMap = {};
+        dungeonRows.forEach(d => {
+          dungeonMap[d.id] = d;
+        });
+
+        videoRows.forEach(v => {
+          if (dungeonMap[v.dungeonId]) {
+            dungeonMap[v.dungeonId].videos.push({
+              title: v.title,
+              url: v.url
+            });
+          }
+        });
+
+        dropRows.forEach(item => {
+          if (dungeonMap[item.dungeonId]) {
+            if (!dungeonMap[item.dungeonId].dropsByGrade[item.grade]) {
+              dungeonMap[item.dungeonId].dropsByGrade[item.grade] = [];
+            }
+            dungeonMap[item.dungeonId].dropsByGrade[item.grade].push({
+              item: item.item,
+              image: item.image
+            });
+          }
+        });
+
+        fixedDropData = Object.values(dungeonMap);
+        fixedDropDataLoaded = true;
+        fixedDropDataError = '';
+        return fixedDropData;
+      } catch (error) {
+        fixedDropDataError = error.message || '엑셀 연동 중 오류가 발생했습니다.';
+        fixedDropData = [];
+        return fixedDropData;
+      }
+    }
+
+    async function renderFixedDropContent() {
+
+      contentBody.innerHTML = `
+        <div class="drop-fixed-wrap">
+          <div class="drop-search-box">
+            <input id="itemSearchInput" class="drop-search-input" type="text" placeholder="아이템명 검색" />
+            <div style="font-size:13px; color:var(--content-muted);">data/info_search_data.xlsx 파일을 직접 읽습니다. 엑셀 수정 후 다시 업로드하면 드랍정보가 바뀝니다.</div>
+          </div>
+          <div id="dungeonCardGrid" class="dungeon-card-grid"></div>
+          <div id="dropPanel" class="drop-panel"></div>
+        </div>
+      `;
+
+      await loadFixedDropData();
+
+      const searchInput = document.getElementById('itemSearchInput');
+      const grid = document.getElementById('dungeonCardGrid');
+      const panel = document.getElementById('dropPanel');
+
+      if (fixedDropDataError) {
+        grid.innerHTML = `<div class="drop-empty-note" style="grid-column:1 / -1;">${fixedDropDataError}</div>`;
+        panel.innerHTML = `<div class="drop-empty-note">엑셀 파일 경로: <code>data/info_search_data.xlsx</code><br>시트명: <code>던전목록</code>, <code>공략영상</code>, <code>드랍목록</code></div>`;
+        return;
+      }
+
+      if (!fixedDropData.length) {
+        grid.innerHTML = `<div class="drop-empty-note" style="grid-column:1 / -1;">엑셀 데이터가 비어 있습니다.</div>`;
+        panel.innerHTML = '';
+        return;
+      }
+
+      let currentDungeonId = fixedDropData[0] ? fixedDropData[0].id : null;
+      let currentKeyword = '';
+
+      function getVisibleDungeons() {
+        if (!currentKeyword) return fixedDropData;
+        const q = currentKeyword.toLowerCase();
+        return fixedDropData.filter(d =>
+          Object.values(d.dropsByGrade || {})
+            .flat()
+            .some(item => (item.item || '').toLowerCase().includes(q))
+        );
+      }
+
+      function renderDungeonPanel() {
+        const dungeon = fixedDropData.find(d => d.id === currentDungeonId);
+        if (!dungeon) {
+          panel.innerHTML = '';
+          return;
+        }
+
+        const gradeOrder = ['입문', '일반', '숙련'];
+        const allGrades = Object.keys(dungeon.dropsByGrade || {});
+        const grades = gradeOrder.filter(g => allGrades.includes(g)).concat(allGrades.filter(g => !gradeOrder.includes(g)));
+
+        const filteredDrops = {};
+        grades.forEach(grade => {
+          const items = (dungeon.dropsByGrade[grade] || []).filter(item =>
+            !currentKeyword || (item.item || '').toLowerCase().includes(currentKeyword.toLowerCase())
+          );
+          filteredDrops[grade] = items;
+        });
+
+        const hasAnyItem = Object.values(filteredDrops).some(arr => arr.length);
+
+        const videoHtml = (dungeon.videos || []).length
+          ? `<div class="video-links">${dungeon.videos.map(v => `<a class="video-link" href="${v.url}" target="_blank" rel="noopener noreferrer">${v.title}</a>`).join('')}</div>`
+          : `<div class="drop-empty-note">등록된 공략 영상이 없습니다.</div>`;
+
+        let tableHtml = '';
+        if (hasAnyItem) {
+          tableHtml = `
+            <div class="drop-grade-table-wrap">
+              <table class="drop-grade-table">
+                <thead>
+                  <tr><th colspan="${grades.length}">등급</th></tr>
+                  <tr>${grades.map(grade => `<th class="grade-name">${grade}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    ${grades.map(grade => {
+                      const items = filteredDrops[grade] || [];
+                      const inner = items.length
+                        ? items.map(item => `
+                            <div class="drop-item-box">
+                              <div class="drop-item-name">${item.item}</div>
+                              ${item.image ? `<div class="drop-item-sub">${item.image}</div>` : ''}
+                            </div>
+                          `).join('')
+                        : `<div class="drop-item-box"><div class="drop-item-sub">-</div></div>`;
+                      return `<td><div class="drop-item-list">${inner}</div></td>`;
+                    }).join('')}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else {
+          tableHtml = `<div class="drop-empty-note">현재 검색어에 해당하는 드랍 아이템이 이 던전에는 없습니다.</div>`;
+        }
+
+        panel.innerHTML = `
+          <div class="drop-panel-head">
+            <h4>${dungeon.name}</h4>
+            <p>${dungeon.description || ''}</p>
+          </div>
+          ${videoHtml}
+          ${tableHtml}
+        `;
+      }
+
+      function renderDungeonCards() {
+        const visible = getVisibleDungeons();
+        if (!visible.length) {
+          grid.innerHTML = `<div class="drop-empty-note" style="grid-column:1 / -1;">검색된 아이템이 없습니다.</div>`;
+          panel.innerHTML = '';
+          return;
+        }
+
+        if (!visible.some(d => d.id === currentDungeonId)) {
+          currentDungeonId = visible[0].id;
+        }
+
+        grid.innerHTML = visible.map(d => `
+          <button class="dungeon-card ${d.id === currentDungeonId ? 'active' : ''}" data-dungeon-id="${d.id}">
+            <div class="dungeon-card-title">${d.name}</div>
+            <div class="dungeon-card-desc">${d.description || ''}</div>
+          </button>
+        `).join('');
+
+        grid.querySelectorAll('[data-dungeon-id]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            currentDungeonId = btn.dataset.dungeonId;
+            renderDungeonCards();
+            renderDungeonPanel();
+          });
+        });
+
+        renderDungeonPanel();
+      }
+
+      searchInput.addEventListener('input', (e) => {
+        currentKeyword = e.target.value.trim();
+        renderDungeonCards();
+      });
+
+      renderDungeonCards();
+    }
+
+
+    const farmRouteSteps = [
+      { key: 'skyfield', label: '천상분지', image: 'images/farm/01-skyfield.jpeg' },
+      { key: 'blackdragon', label: '흑룡의환영', image: 'images/farm/02-blackdragon.jpeg' },
+      { key: 'icewarehouse', label: '얼음창고', image: 'images/farm/03-icewarehouse.jpeg' },
+      { key: 'floatingaltar', label: '부유제단', image: 'images/farm/04-floatingaltar.jpeg' },
+      { key: 'pirateship', label: '저주받은 해적선', image: 'images/farm/05-pirateship.jpeg' },
+      { key: 'destinygrave', label: '천명부화장', image: 'images/farm/06-destinygrave.jpeg' },
+      { key: 'masktheater', label: '귀면극단', image: 'images/farm/07-masktheater.jpeg' }
+    ];
+
+    function renderFarmRouteContent() {
+      contentBody.innerHTML = `
+        <div class="farm-route-wrap">
+          <div class="farm-route-head">
+            <h4>초반 파밍 순서</h4>
+            <p>아래의 순서대로 파밍단계를 확인할수있습니다. 버튼을 클릭하면 해당던전에 대한 팁이 나옵니다.</p>
+          </div>
+          <div class="farm-route-nav" id="farmRouteNav"></div>
+          <div class="farm-image-panel" id="farmImagePanel"></div>
+        </div>
+      `;
+
+      const nav = document.getElementById('farmRouteNav');
+      const panel = document.getElementById('farmImagePanel');
+      let activeKey = '';
+
+      nav.innerHTML = farmRouteSteps.map((step, index) => `
+        ${index > 0 ? '<span class="farm-route-arrow">></span>' : ''}
+        <button class="farm-route-btn" data-farm-key="${step.key}">${step.label}</button>
+      `).join('');
+
+      function renderFarmImage(step) {
+        if (!step) {
+          panel.classList.remove('show');
+          panel.innerHTML = '';
+          return;
+        }
+
+        panel.classList.add('show');
+        panel.innerHTML = `
+          <div class="farm-image-head">
+            <div>
+              <strong>${step.label}</strong><br>
+              <span></span>
+            </div>
+          </div>
+          <div class="farm-image-wrap">
+            <img class="farm-image" src="${step.image}" alt="${step.label}" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='block';">
+          </div>
+          <div class="farm-image-note" style="display:none;">
+            현재 연결된 이미지를 찾지 못했습니다.<br>
+            아래 경로에 파일을 넣어주세요.<br><br>
+            <code>${step.image}</code>
+          </div>
+        `;
+      }
+
+      nav.querySelectorAll('[data-farm-key]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeKey = btn.dataset.farmKey;
+          nav.querySelectorAll('.farm-route-btn').forEach(el => {
+            el.classList.toggle('active', el.dataset.farmKey === activeKey);
+          });
+          const selected = farmRouteSteps.find(step => step.key === activeKey);
+          renderFarmImage(selected);
+        });
+      });
+
+      renderFarmImage(null);
+    }
+
+    function renderImageContent(section) {
+
+
+      contentBody.innerHTML = `
+        <div class="image-wrap">
+          <div class="image-card">
+            <div class="image-card-head">${section.title}</div>
+            <img class="guide-image" src="${section.image}" alt="${section.title}" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='block';" />
+          </div>
+          <div class="image-note" style="display:none;">
+            현재 연결된 JPEG 파일을 찾지 못했습니다.<br>
+            아래 경로에 이미지를 넣어주세요.<br><br>
+            <code>${section.image}</code>
+          </div>
+        </div>
+      `;
+    }
+
+    async function openContent(id) {
+      const section = contentMap[id];
+      if (!section) return;
+      setActiveMenu(id);
+      contentTitle.textContent = section.title;
+      contentSubtitle.textContent = section.subtitle;
+      contentCategory.textContent = `SECTION : ${section.category}`;
+      if (section.type === 'dropFixed') {
+        await renderFixedDropContent();
+      } else if (section.type === 'farmRoute') {
+        renderFarmRouteContent();
+      } else {
+        renderImageContent(section);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    menuButtons.forEach(btn => btn.addEventListener('click', () => { openContent(btn.dataset.target); }));
+    jumpers.forEach(btn => btn.addEventListener('click', () => { openContent(btn.dataset.jump); }));
+
+    const tipTexts = [
+      'TIP: 빠르게 성장하실려면 홍보는 필수!!',
+      'TIP: 문파가입하셔서 던전돌아야지 빠르게 성장합니다~! 함께해요',
+    ];
+    let tipIndex = 0;
+    setInterval(() => {
+      tipIndex = (tipIndex + 1) % tipTexts.length;
+      rotatingTip.textContent = tipTexts[tipIndex];
+    }, 3800);
+
+    openContent('home');
+  </script>
+</body>
+</html>
