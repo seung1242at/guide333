@@ -140,6 +140,10 @@
     /* 아이템 드랍 검색 UI */
     .search-box { width: 100%; background: #151515; border: 1px solid var(--border-color); color: #fff; padding: 18px; border-radius: 10px; margin-bottom: 25px; font-size: 16px; }
     .dungeon-tabs { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 30px; }
+    .dungeon-tabs.search-mode { opacity: 0.55; }
+    .dungeon-tabs.search-mode .tab-item { cursor: default; }
+    .drop-search-status { margin: -12px 0 18px; color: #9a9a9a; font-size: 13px; line-height: 1.5; }
+    .drop-search-status strong { color: var(--accent-green); }
     .tab-item { padding: 12px; background: #111; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 13px; text-align: center; }
     .tab-item.active { border-color: var(--accent-green); color: var(--accent-green); font-weight: 700; }
     
@@ -398,12 +402,29 @@
       return text || '기타';
     }
 
+    function normalizeSearchText(value) {
+      return cellText(value).toLowerCase().replace(/\s+/g, '');
+    }
+
+    function rowMatchesKeyword(row, keyword) {
+      const rawKeyword = cellText(keyword).toLowerCase();
+      const compactKeyword = normalizeSearchText(keyword);
+      if (!compactKeyword) return true;
+
+      const haystack = `${row.dungeonName} ${row.grade} ${row.item}`;
+      const rawHaystack = haystack.toLowerCase();
+      const compactHaystack = normalizeSearchText(haystack);
+
+      return rawHaystack.includes(rawKeyword) || compactHaystack.includes(compactKeyword);
+    }
+
     function buildDungeonGradeGroups(rows) {
       const dungeonGroups = new Map();
       rows.forEach(row => {
         const dungeonKey = row.dungeonKey || row.dungeonName;
         if (!dungeonGroups.has(dungeonKey)) {
           dungeonGroups.set(dungeonKey, {
+            dungeonKey,
             dungeonName: row.dungeonName,
             grades: { '입문': [], '일반': [], '숙련': [], '기타': [] },
             total: 0
@@ -416,7 +437,14 @@
         group.grades[grade].push(row.item);
         group.total += 1;
       });
-      return [...dungeonGroups.values()];
+
+      const dungeonOrder = new Map(getVisibleDungeons().map((dungeon, index) => [dungeon.id, index]));
+      return [...dungeonGroups.values()].sort((a, b) => {
+        const orderA = dungeonOrder.has(a.dungeonKey) ? dungeonOrder.get(a.dungeonKey) : 999999;
+        const orderB = dungeonOrder.has(b.dungeonKey) ? dungeonOrder.get(b.dungeonKey) : 999999;
+        if (orderA !== orderB) return orderA - orderB;
+        return cellText(a.dungeonName).localeCompare(cellText(b.dungeonName), 'ko');
+      });
     }
 
     function uniqueItems(items) {
@@ -439,39 +467,45 @@
     }
 
     function renderDropTable() {
-      const keyword = document.getElementById('dropSearchInput')?.value.trim().toLowerCase() || '';
+      const searchInput = document.getElementById('dropSearchInput');
+      const keyword = searchInput?.value.trim() || '';
       const isGlobalSearch = keyword.length > 0;
-      const rows = dropRows.filter(row => {
-        const haystack = `${row.dungeonName} ${row.grade} ${row.item}`.toLowerCase();
 
-        // 검색어가 있으면 선택된 던전에 묶지 않고 엑셀 드랍목록 전체에서 찾습니다.
-        // 검색어가 없을 때만 사용자가 클릭한 던전 탭 기준으로 목록을 보여줍니다.
-        if (isGlobalSearch) {
-          return haystack.includes(keyword);
-        }
-
-        return !selectedDungeonId || row.dungeonKey === selectedDungeonId;
-      });
+      // Important: global search mode NEVER uses selectedDungeonId.
+      // Empty search mode is the only time the selected dungeon tab is applied.
+      const rows = isGlobalSearch
+        ? dropRows.filter(row => rowMatchesKeyword(row, keyword))
+        : dropRows.filter(row => !selectedDungeonId || row.dungeonKey === selectedDungeonId);
 
       const resultArea = document.getElementById('dropResultArea');
       const counter = document.getElementById('dropCounter');
       const modeText = document.getElementById('dropSearchModeText');
+      const tabs = document.getElementById('dungeonTabs');
       if (!resultArea) return;
 
+      document.querySelectorAll('#dungeonTabs .tab-item').forEach(tab => {
+        tab.classList.toggle('active', !isGlobalSearch && tab.dataset.id === selectedDungeonId);
+      });
+      if (tabs) tabs.classList.toggle('search-mode', isGlobalSearch);
+
       if (modeText) {
-        modeText.textContent = isGlobalSearch
-          ? '전체 던전에서 검색 중: 검색된 재료/아이템이 드랍되는 던전을 던전별로 묶고, 각 던전 안에서 입문/일반/숙련으로 구분합니다.'
-          : '선택한 던전의 드랍 목록을 입문/일반/숙련 3가지 등급으로 한 화면에 구분해서 표시합니다.';
-      }
-
-      counter.textContent = `${rows.length.toLocaleString()}개 항목`;
-
-      if (!rows.length) {
-        resultArea.innerHTML = '<div style="padding:22px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;background:#111;color:#888;text-align:center;">검색 결과가 없습니다.</div>';
-        return;
+        modeText.innerHTML = isGlobalSearch
+          ? '<strong>\uc804\uccb4 \ub358\uc804 \uac80\uc0c9 \uc911</strong> - \uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubaa8\ub4e0 \ub358\uc804\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4. \ub358\uc804 \ud0ed \uc120\ud0dd\uc740 \uac80\uc0c9 \uacb0\uacfc\uc5d0 \uc801\uc6a9\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.'
+          : '<strong>\uc120\ud0dd\ud55c \ub358\uc804 \ubcf4\uae30</strong> - \uac80\uc0c9\uc5b4\uac00 \uc5c6\uc744 \ub54c\ub9cc \uc120\ud0dd\ud55c \ub358\uc804\uc758 \ub4dc\ub78d \ubaa9\ub85d\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4.';
       }
 
       const groups = buildDungeonGradeGroups(rows);
+      if (counter) {
+        counter.textContent = isGlobalSearch
+          ? `${groups.length.toLocaleString()}\uac1c \ub358\uc804 / ${rows.length.toLocaleString()}\uac1c \ud56d\ubaa9`
+          : `${rows.length.toLocaleString()}\uac1c \ud56d\ubaa9`;
+      }
+
+      if (!rows.length) {
+        resultArea.innerHTML = '<div style="padding:22px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;background:#111;color:#888;text-align:center;">\uac80\uc0c9 \uacb0\uacfc\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.</div>';
+        return;
+      }
+
       resultArea.innerHTML = `
         <div class="drop-group-wrap">
           ${groups.map(group => `
@@ -505,7 +539,7 @@
 
       displayArea.innerHTML = `
         <input type="text" id="dropSearchInput" class="search-box" placeholder="🔍 재료명 / 아이템명 검색 시 전체 던전에서 검색됩니다...">
-        <div id="dropSearchModeText" style="margin:-12px 0 18px;color:#9a9a9a;font-size:13px;line-height:1.5;"></div>
+        <div id="dropSearchModeText" class="drop-search-status"></div>
         <div class="dungeon-tabs" id="dungeonTabs">
           ${dungeons.map((dungeon, index) => `
             <div class="tab-item ${dungeon.id === selectedDungeonId || (!selectedDungeonId && index === 0) ? 'active' : ''}" data-id="${dungeon.id}">${dungeon.name}</div>
@@ -522,7 +556,8 @@
       document.querySelectorAll('#dungeonTabs .tab-item').forEach(tab => {
         tab.addEventListener('click', () => {
           selectedDungeonId = tab.dataset.id;
-          document.querySelectorAll('#dungeonTabs .tab-item').forEach(item => item.classList.toggle('active', item === tab));
+          const searchInput = document.getElementById('dropSearchInput');
+          if (searchInput && searchInput.value.trim()) searchInput.value = '';
           renderDropTable();
         });
       });
