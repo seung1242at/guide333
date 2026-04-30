@@ -3,1174 +3,441 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blade & Soul Beginner Launcher Guide</title>
+  <title>B&S Beginner Guide Launcher</title>
   <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
     :root {
-      --line:rgba(124,156,255,.18);
-      --text:#eef2ff;
-      --muted:#99a3c4;
-      --accent:#78a6ff;
-      --accent-2:#8b6dff;
-      --glow:0 0 0 1px rgba(120,166,255,.15), 0 0 24px rgba(79,119,255,.14);
-      --radius:18px;
-      --content-bg:#f4f5f7;
-      --content-text:#1d2333;
-      --content-muted:#59627c;
-      --content-line:#dde2ef;
+      --bg-black: #000000;
+      --text-white: #ffffff;
+      --text-muted: #a0a0a0;
+      --accent-green: #3fff00;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    * { box-sizing:border-box; }
-    html, body { margin:0; min-height:100%; }
-    body {
-      background:
-        radial-gradient(circle at top left, rgba(139,109,255,.18), transparent 28%),
-        radial-gradient(circle at top right, rgba(120,166,255,.16), transparent 32%),
-        linear-gradient(180deg, #080a10 0%, #0c1120 55%, #090b12 100%);
-      color:var(--text);
-      font-family:"Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    * { box-sizing: border-box; outline: none; }
+    html, body { margin: 0; padding: 0; height: 100%; background-color: var(--bg-black); color: var(--text-white); font-family: 'Pretendard', sans-serif; overflow: hidden; }
+
+    /* 상단 헤더 (image_0d4415.png 디자인 반영) */
+    .header {
+      position: fixed;
+      top: 0; left: 0; width: 100%;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 25px 60px;
+      z-index: 1000;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+    }
+    .header .logo { font-size: 20px; font-weight: 800; }
+    .header-nav { display: flex; gap: 30px; }
+    .header-nav button { 
+      all: unset; cursor: pointer; color: var(--text-white); 
+      font-size: 14px; font-weight: 600; transition: var(--transition); 
+    }
+    .header-nav button:hover, .header-nav button.active { color: var(--accent-green); }
+    .header-auth { 
+      padding: 10px 25px; border-radius: 999px; background: var(--text-white); 
+      color: var(--bg-black); font-size: 13px; font-weight: 700; border: none; cursor: pointer;
     }
 
-    body::before {
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-      background-size:42px 42px;
-      mask-image:linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.45));
-      opacity:.35;
-    }
+    /* 메인 레이아웃: 좌우 분할 */
+    .main-container { display: flex; width: 100%; height: 100vh; }
 
-    .app {
-      display:grid;
-      grid-template-columns:280px 1fr 320px;
-      gap:20px;
-      min-height:100vh;
-      padding:22px;
+    /* 왼쪽: 텍스트 패널 (고정) */
+    .left-panel {
+      flex: 3 1 0;
+      width: 30%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 60px 0 100px;
+      z-index: 10;
     }
-
-    .panel {
-      background:linear-gradient(180deg, rgba(19,24,37,.94), rgba(11,14,24,.94));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--glow);
-      backdrop-filter:blur(12px);
-    }
-
-    .sidebar, .rightbar {
-      padding:18px;
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-    }
-
-    .logo {
-      padding:18px;
-      border-radius:16px;
-      background:linear-gradient(135deg, rgba(120,166,255,.16), rgba(139,109,255,.09));
-      border:1px solid rgba(120,166,255,.22);
-    }
-    .logo small { color:#b7c3ea; letter-spacing:.22em; display:block; margin-bottom:8px; }
-    .logo h1 { font-size:28px; margin:0; line-height:1.05; }
-    .logo p { color:var(--muted); margin:10px 0 0; font-size:14px; }
-
-    .nav { display:flex; flex-direction:column; gap:10px; }
-    .nav button, .search-result-btn {
-      all:unset;
-      cursor:pointer;
-      padding:14px 14px 14px 16px;
-      border-radius:14px;
-      border:1px solid transparent;
-      color:#dfe6ff;
-      background:rgba(255,255,255,.02);
-      transition:.22s ease;
-      display:block;
-    }
-    .nav button:hover,
-    .nav button.active,
-    .search-result-btn:hover,
-    .search-result-btn.active {
-      transform:translateY(-1px);
-      background:linear-gradient(90deg, rgba(120,166,255,.17), rgba(139,109,255,.12));
-      border-color:rgba(120,166,255,.24);
-      box-shadow:0 8px 24px rgba(87,116,255,.16);
-    }
-    .nav button span,
-    .search-result-btn span {
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin-top:4px;
-      line-height:1.45;
-    }
-
-    .side-footer {
-      margin-top:auto;
-      padding:14px;
-      border-radius:14px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.05);
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.55;
-    }
-
-    .main { display:flex; flex-direction:column; gap:18px; }
-
-    .hero {
-      position:relative;
-      overflow:hidden;
-      padding:28px;
-      min-height:286px;
-      display:grid;
-      grid-template-columns:minmax(320px, 1.1fr) minmax(360px, .9fr);
-      gap:18px;
-      background:
-        linear-gradient(120deg, rgba(7,11,20,.92) 0%, rgba(7,11,20,.44) 40%, rgba(11,14,24,.2) 100%),
-        radial-gradient(circle at 80% 20%, rgba(120,166,255,.28), transparent 30%),
-        radial-gradient(circle at 70% 80%, rgba(139,109,255,.22), transparent 26%),
-        linear-gradient(135deg, #111827 0%, #0f172a 45%, #111827 100%);
-      border-radius:22px;
-      border:1px solid var(--line);
-      box-shadow:var(--glow);
-      align-items:start;
-    }
-    .hero::after {
-      content:"BLADE & SOUL";
-      position:absolute;
-      right:22px;
-      top:18px;
-      font-size:13px;
-      letter-spacing:.32em;
-      color:rgba(255,255,255,.35);
-    }
-    .hero-copy { max-width:580px; z-index:1; align-self:end; }
-    .eyebrow {
-      display:inline-block;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      color:#dfe8ff;
-      border:1px solid rgba(120,166,255,.22);
-      background:rgba(120,166,255,.08);
-      margin-bottom:14px;
-    }
-    .hero h2 { font-size:38px; line-height:1.12; margin:0; }
-    .hero p { font-size:15px; color:#c3cbed; line-height:1.72; max-width:520px; margin:12px 0 18px; }
-
-    .hero-actions { display:flex; flex-wrap:wrap; gap:10px; }
-    .cta, .ghost {
-      all:unset;
-      cursor:pointer;
-      padding:12px 16px;
-      border-radius:12px;
-      font-weight:700;
-      font-size:14px;
-      text-align:center;
-    }
-    .cta {
-      background:linear-gradient(135deg, var(--accent), var(--accent-2));
-      box-shadow:0 10px 28px rgba(97,126,255,.32);
-    }
-    .ghost {
-      border:1px solid rgba(120,166,255,.22);
-      color:#dfe8ff;
-      background:rgba(255,255,255,.03);
-    }
-
-    .content-shell {
-      min-height:420px;
-      padding:0;
-      overflow:hidden;
-      background:var(--content-bg);
-      border:1px solid rgba(120,166,255,.14);
-    }
-    .content-head {
-      display:flex;
-      justify-content:space-between;
-      gap:16px;
-      align-items:flex-end;
-      padding:22px 24px 16px;
-      background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(244,245,247,.94));
-      border-bottom:1px solid var(--content-line);
-      color:var(--content-text);
-    }
-    .content-head h3 { margin:0; font-size:28px; line-height:1.15; }
-    .content-head p { margin:8px 0 0; color:var(--content-muted); font-size:14px; }
-    .content-meta {
-      font-size:12px;
-      color:#6f7893;
-      background:#fff;
-      border:1px solid var(--content-line);
-      border-radius:999px;
-      padding:7px 11px;
-      white-space:nowrap;
-    }
-    .content-body {
-      padding:24px;
-      color:var(--content-text);
-      background:var(--content-bg);
-      min-height:460px;
-    }
-
-    .image-wrap {
-      display:grid;
-      gap:14px;
-    }
-    .image-card {
-      border-radius:18px;
-      border:1px solid rgba(120,166,255,.18);
-      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
-      box-shadow:0 10px 28px rgba(17,28,65,.18);
-      overflow:hidden;
-    }
-    .image-card-head {
-      padding:14px 16px;
-      border-bottom:1px solid rgba(120,166,255,.12);
-      color:#eef2ff;
-      font-size:14px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-    }
-    .guide-image {
-      width:100%;
-      display:block;
-      background:#0b1020;
-    }
-    .image-note {
-      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
-      border:1px solid rgba(120,166,255,.18);
-      border-radius:16px;
-      padding:16px;
-      color:#aab6da;
-      line-height:1.75;
-      font-size:14px;
-    }
-    .image-note code {
-      background:rgba(255,255,255,.08);
-      padding:2px 6px;
-      border-radius:8px;
-      color:#e6edff;
-    }
-
-    .status {
-      padding:16px;
-      border-radius:14px;
-      background:linear-gradient(135deg, rgba(120,166,255,.12), rgba(139,109,255,.08));
-      border:1px solid rgba(120,166,255,.18);
-    }
-    .status strong { display:block; font-size:14px; margin-bottom:8px; }
-    .status p { margin:0; color:#dbe4ff; line-height:1.65; font-size:14px; }
-
-    .card { padding:16px; }
-    .card h3 { margin:0 0 12px; }
-    .tips .tip {
-      padding:12px 0;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      font-size:14px;
-      line-height:1.6;
-      color:#dfe6ff;
-    }
-    .tips .tip:last-child { border-bottom:0; }
-    .checklist { display:grid; gap:10px; }
-    .check {
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      background:rgba(255,255,255,.025);
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:12px;
-      padding:12px 13px;
-    }
-    .check b { font-size:13px; color:#b9c5ea; min-width:56px; }
-    .check p { margin:0; color:#e6ebff; font-size:14px; line-height:1.55; }
-
-    .footerbar {
-      margin-top:6px;
-      padding:12px 16px;
-      border-radius:14px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.05);
-      color:#c8d1f0;
-      font-size:13px;
-      display:flex;
-      justify-content:space-between;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-
+    .category-label { color: var(--accent-green); font-size: 15px; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; }
+    .main-title { font-size: 52px; font-weight: 900; line-height: 1.15; margin: 0; letter-spacing: -2px; }
+    .main-desc { color: var(--text-muted); font-size: 17px; margin: 30px 0 50px; line-height: 1.7; max-width: 480px; }
     
-    .drop-tools {
-      display:grid;
-      gap:14px;
-      margin-bottom:18px;
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      color: var(--text-white); font-weight: 700; text-decoration: none; font-size: 16px;
+      cursor: pointer; transition: var(--transition);
     }
-    .drop-toolbar {
-      display:grid;
-      grid-template-columns:1fr 180px auto;
-      gap:10px;
-      align-items:center;
+    .action-btn .circle {
+      width: 36px; height: 36px; border: 1px solid rgba(255,255,255,0.4); 
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      transition: var(--transition); font-size: 18px;
     }
-    .drop-input, .drop-file {
-      width:100%;
-      border:1px solid var(--content-line);
-      background:#fff;
-      color:var(--content-text);
-      border-radius:12px;
-      padding:12px 14px;
-      outline:none;
-      font-size:14px;
-    }
-    .drop-file {
-      padding:10px 12px;
-    }
-    .drop-btn {
-      all:unset;
-      cursor:pointer;
-      padding:12px 16px;
-      border-radius:12px;
-      font-weight:700;
-      font-size:14px;
-      text-align:center;
-      color:#fff;
-      background:linear-gradient(135deg, var(--accent), var(--accent-2));
-      box-shadow:0 10px 28px rgba(97,126,255,.18);
-    }
-    .drop-meta {
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      color:var(--content-muted);
-      font-size:13px;
-    }
-    .drop-table-wrap {
-      overflow:auto;
-      border:1px solid var(--content-line);
-      border-radius:14px;
-      background:#fff;
-    }
-    .drop-table {
-      width:100%;
-      border-collapse:collapse;
-      min-width:760px;
-      font-size:14px;
-    }
-    .drop-table th, .drop-table td {
-      padding:12px 14px;
-      border-bottom:1px solid var(--content-line);
-      text-align:left;
-      vertical-align:top;
-      color:var(--content-text);
-    }
-    .drop-table th {
-      background:#f6f8fc;
-      color:#445070;
-      font-size:12px;
-      letter-spacing:.04em;
-      position:sticky;
-      top:0;
-      z-index:1;
-    }
-    .drop-table tr:last-child td {
-      border-bottom:0;
-    }
-    .drop-empty {
-      padding:18px;
-      border:1px dashed var(--content-line);
-      border-radius:14px;
-      background:#fff;
-      color:var(--content-muted);
-      line-height:1.7;
-      font-size:14px;
-    }
-    .drop-tag {
-      display:inline-flex;
-      align-items:center;
-      padding:5px 10px;
-      border-radius:999px;
-      background:#f1f5ff;
-      border:1px solid #dbe4ff;
-      color:#4a5ea8;
-      font-size:12px;
-      white-space:nowrap;
+    .action-btn:hover .circle { border-color: var(--accent-green); color: var(--accent-green); transform: translateX(8px); }
+
+    /* 오른쪽: 상세 출력 영역 (스크롤 가능) */
+    .right-panel {
+      flex: 7 1 0;
+      width: 70%;
+      height: 100%;
+      position: relative;
+      background: #080808;
+      border-left: 1px solid var(--border-color);
+      overflow-y: auto;
+      padding: 120px 60px 80px;
     }
 
+    /* 콘텐츠 애니메이션 */
+    #displayArea { animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .drop-fixed-wrap {
-      display:grid;
-      gap:18px;
-    }
-    .drop-search-box {
-      display:grid;
-      gap:10px;
-      padding:18px;
-      border:1px solid var(--content-line);
-      border-radius:16px;
-      background:#fff;
-      box-shadow:0 10px 26px rgba(19,35,80,.04);
-    }
-    .drop-search-input {
-      width:100%;
-      border:1px solid var(--content-line);
-      background:#fff;
-      color:var(--content-text);
-      border-radius:12px;
-      padding:13px 15px;
-      outline:none;
-      font-size:14px;
-    }
-    .dungeon-card-grid {
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0,1fr));
-      gap:14px;
-    }
-    .dungeon-card {
-      all:unset;
-      display:block;
-      cursor:pointer;
-      border-radius:18px;
-      border:1px solid #27304a;
-      background:linear-gradient(180deg, #08111f, #091624);
-      color:#eef2ff;
-      padding:18px;
-      box-shadow:0 10px 28px rgba(17,28,65,.18);
-      transition:.2s ease;
-    }
-    .dungeon-card:hover, .dungeon-card.active {
-      transform:translateY(-1px);
-      border-color:#5c77d8;
-      box-shadow:0 12px 30px rgba(72,98,208,.22);
-    }
-    .dungeon-card-title {
-      font-size:18px;
-      font-weight:800;
-      margin-bottom:8px;
-    }
-    .dungeon-card-desc {
-      font-size:13px;
-      line-height:1.6;
-      color:#b9c4e9;
-    }
-    .drop-panel {
-      display:grid;
-      gap:14px;
-    }
-    .drop-panel-head {
-      padding:22px 24px;
-      border-radius:18px;
-      background:linear-gradient(180deg, #08111f, #091624);
-      border:1px solid #253055;
-      color:#eef2ff;
-      box-shadow:0 10px 28px rgba(17,28,65,.18);
-    }
-    .drop-panel-head h4 {
-      margin:0;
-      font-size:24px;
-      text-align:center;
-    }
-    .drop-panel-head p {
-      margin:10px 0 0;
-      font-size:14px;
-      color:#c9d3f3;
-      line-height:1.65;
-      text-align:left;
-    }
-    .video-links {
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-    .video-link {
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 14px;
-      border-radius:12px;
-      background:#fff;
-      border:1px solid var(--content-line);
-      color:#324169;
-      text-decoration:none;
-      font-size:14px;
-      font-weight:700;
-    }
-    .drop-grade-table-wrap {
-      overflow:auto;
-      border:1px solid #8c5716;
-      background:#1a0d05;
-    }
-    .drop-grade-table {
-      width:100%;
-      min-width:760px;
-      border-collapse:collapse;
-      table-layout:fixed;
-      background:#1a0d05;
-      color:#fff3d8;
-    }
-    .drop-grade-table th,
-    .drop-grade-table td {
-      border:1px solid #8c5716;
-      padding:12px 10px;
-      text-align:center;
-      vertical-align:top;
-    }
-    .drop-grade-table thead th {
-      background:#2a1407;
-      font-size:14px;
-      font-weight:800;
-      color:#ffd687;
-    }
-    .drop-grade-table .grade-name {
-      background:#2a1407;
-      font-weight:800;
-      color:#fff1c7;
-    }
-    .drop-item-list {
-      display:grid;
-      gap:10px;
-      justify-items:center;
-    }
-    .drop-item-box {
-      display:grid;
-      gap:6px;
-      width:100%;
-      min-height:56px;
-      align-content:start;
-    }
-    .drop-item-name {
-      font-weight:700;
-      color:#fff;
-      line-height:1.45;
-      word-break:keep-all;
-    }
-    .drop-item-sub {
-      font-size:12px;
-      color:#d0b48d;
-    }
-    .drop-empty-note {
-      padding:18px;
-      border:1px dashed var(--content-line);
-      border-radius:14px;
-      background:#fff;
-      color:var(--content-muted);
-      line-height:1.7;
-      font-size:14px;
-    }
+    /* 이미지 스타일 */
+    .content-img { width: 100%; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
 
+    /* 초반 파밍 순서도 */
+    .farm-button-wrap {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 22px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 0 0 14px;
+      background: linear-gradient(to bottom, #080808 72%, rgba(8,8,8,0));
+    }
+    .farm-top-btn {
+      all: unset;
+      cursor: pointer;
+      text-align: center;
+      padding: 13px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: #111;
+      color: #d0d0d0;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.2;
+      transition: var(--transition);
+    }
+    .farm-top-btn:hover, .farm-top-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      background: rgba(63,255,0,0.08);
+    }
+    .farm-detail {
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      background: #0f0f0f;
+      padding: 18px;
+    }
+    .farm-detail-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .farm-detail h3 { margin: 0; font-size: 24px; }
+    .farm-badge { color: var(--accent-green); font-weight: 900; font-size: 13px; white-space: nowrap; }
+    .farm-detail p { margin: 0 0 16px; color: var(--text-muted); line-height: 1.6; font-size: 14px; }
+    .farm-detail img { width: 100%; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 24px 48px rgba(0,0,0,0.45); }
+
+    /* 아이템 드랍 검색 UI */
+    .search-box { width: 100%; background: #151515; border: 1px solid var(--border-color); color: #fff; padding: 18px; border-radius: 10px; margin-bottom: 25px; font-size: 16px; }
+    .dungeon-tabs { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 30px; }
+    .tab-item { padding: 12px; background: #111; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 13px; text-align: center; }
+    .tab-item.active { border-color: var(--accent-green); color: var(--accent-green); font-weight: 700; }
     
-    .farm-route-wrap {
-      display:grid;
-      gap:18px;
-    }
-    .farm-route-head,
-    .farm-image-head {
-      padding:18px 20px;
-      border-radius:18px;
-      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
-      border:1px solid rgba(120,166,255,.18);
-      color:#eef2ff;
-      box-shadow:0 10px 28px rgba(17,28,65,.18);
-    }
-    .farm-route-head h4 {
-      margin:0 0 8px;
-      font-size:22px;
-    }
-    .farm-route-head p,
-    .farm-image-head span {
-      margin:0;
-      font-size:14px;
-      color:#b9c4e9;
-      line-height:1.7;
-    }
-    .farm-route-nav {
-      display:grid;
-      grid-template-columns:repeat(13, minmax(0, 1fr));
-      align-items:center;
-      gap:10px;
-    }
-    .farm-route-btn {
-      all:unset;
-      cursor:pointer;
-      padding:15px 10px;
-      border-radius:14px;
-      border:1px solid rgba(120,166,255,.18);
-      background:linear-gradient(180deg, rgba(16,24,42,.96), rgba(10,16,30,.96));
-      color:#eef2ff;
-      font-size:14px;
-      font-weight:700;
-      box-shadow:0 8px 20px rgba(13,20,44,.12);
-      transition:.18s ease;
-      text-align:center;
-      min-height:52px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      line-height:1.35;
-      word-break:keep-all;
-    }
-    .farm-route-btn:hover,
-    .farm-route-btn.active {
-      transform:translateY(-1px);
-      border-color:rgba(120,166,255,.36);
-      background:linear-gradient(180deg, rgba(24,35,62,.98), rgba(14,22,40,.98));
-      box-shadow:0 12px 26px rgba(49,78,180,.24);
-    }
-    .farm-route-arrow {
-      color:#8fa2d2;
-      font-size:20px;
-      font-weight:800;
-      line-height:1;
-      user-select:none;
-      text-align:center;
-    }
-    .farm-image-panel {
-      display:none;
-      gap:14px;
-    }
-    .farm-image-panel.show {
-      display:grid;
-    }
-    .farm-image-wrap {
-      border-radius:18px;
-      border:1px solid rgba(120,166,255,.18);
-      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
-      overflow:hidden;
-      box-shadow:0 10px 28px rgba(17,28,65,.18);
-    }
-    .farm-image {
-      display:block;
-      width:100%;
-      height:auto;
-      background:#0b1020;
-    }
-    .farm-image-note {
-      background:linear-gradient(180deg, rgba(13,20,35,.98), rgba(9,14,26,.98));
-      border:1px solid rgba(120,166,255,.18);
-      border-radius:14px;
-      padding:16px;
-      color:#aab6da;
-      line-height:1.7;
-      font-size:14px;
-    }
-    .farm-image-note code {
-      background:rgba(255,255,255,.08);
-      padding:2px 6px;
-      border-radius:8px;
-      color:#e6edff;
+    .drop-table { width: 100%; border-collapse: collapse; background: #0a0a0a; border-radius: 12px; overflow: hidden; }
+    .drop-table th { background: #1a1a1a; color: var(--accent-green); padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border-color); }
+    .drop-table td { padding: 15px; border-bottom: 1px solid var(--border-color); text-align: center; color: #ccc; font-size: 14px; }
+
+    /* 하단 팁 */
+    .bottom-footer { position: fixed; bottom: 40px; left: 100px; color: var(--text-muted); font-size: 13px; font-weight: 500; }
+
+    @media (max-width: 900px) {
+      html, body { overflow: auto; }
+      .main-container { flex-direction: column; height: auto; min-height: 100vh; }
+      .left-panel, .right-panel { width: 100%; flex: none; }
+      .left-panel { min-height: 360px; padding: 120px 28px 50px; }
+      .right-panel { padding: 40px 24px 80px; overflow: visible; }
+      .header { padding: 20px 24px; gap: 16px; flex-wrap: wrap; }
+      .header-nav { gap: 14px; flex-wrap: wrap; }
+      .bottom-footer { left: 28px; bottom: 20px; }
+      .farm-button-wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); position: static; background: transparent; }
     }
 
-    @media (max-width: 1280px) {
-      .app { grid-template-columns:240px 1fr; }
-      .rightbar { grid-column:1 / -1; }
-    }
-    @media (max-width: 1000px) {
-      .hero { grid-template-columns:1fr; }
-      .search-controls { grid-template-columns:1fr; }
-      .drop-toolbar { grid-template-columns:1fr; }
-      .dungeon-card-grid { grid-template-columns:1fr; }
-    }
-    @media (max-width: 860px) {
-      .app { grid-template-columns:1fr; padding:14px; }
-      .hero h2 { font-size:30px; }
-    }
+    /* 스크롤바 커스텀 */
+    .right-panel::-webkit-scrollbar { width: 4px; }
+    .right-panel::-webkit-scrollbar-thumb { background: var(--accent-green); border-radius: 10px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <div class="app">
-    <aside class="panel sidebar">
-      <div class="logo">
-        <small>BEGINNER GUIDE</small>
-        <h1>회상서버<br>초보자 가이드</h1>
-        <p>제작 : 혼천교 샵문파</p>
+
+  <header class="header">
+    <div class="logo">B&S 회상서버</div>
+    <nav class="header-nav" id="mainNav">
+      <button class="active" data-id="home">캐릭생성 & 기초세팅</button>
+      <button data-id="start">초반 파밍 순서</button>
+      <button data-id="control">아이템 드랍 정보</button>
+      <button data-id="class">문파 정보</button>
+      <button data-id="faq">게임 설정</button>
+      <button data-id="extra">FAQ</button>
+    </nav>
+    <button class="header-auth">COMMUNITY</button>
+  </header>
+
+  <div class="main-container">
+    <div class="left-panel">
+      <div class="category-label" id="sideLabel">SETTING</div>
+      <h1 class="main-title" id="sideTitle">캐릭터 생성 및<br>기초 세팅</h1>
+      <p class="main-desc" id="sideDesc">회상서버를 시작하는 첫걸음! 최적화된 게임 환경과 초기 동선을 확인하세요.</p>
+      <div class="action-btn">
+        <span>상세 가이드 보기</span>
+        <div class="circle">→</div>
       </div>
+    </div>
 
-      <nav class="nav">
-        <button class="active" data-target="home">캐릭생성&기초세팅<span>캐릭터 생성 / 기본 아이템 세팅</span></button>
-        <button data-target="start">초반파밍순서<span>장비 업그레이드 / 파밍 루트</span></button>
-        <button data-target="control">아이템드랍정보<span>던전별 드랍 아이템 정보</span></button>
-        <button data-target="class">문파정보<span>세력별 대표 문파 안내</span></button>
-        <button data-target="faq">게임설정<span>UI설정 등 게임설정방법</span></button>
-        <button data-target="extra">FAQ<span>원하는 새 메인 메뉴</span></button>
-      </nav>
-
-      <div class="side-footer">
-        <a href="https://example.com" target="_blank" rel="noopener noreferrer" style="display:block; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.025); color:#dfe6ff; text-decoration:none; font-size:13px; margin-bottom:8px;">
-          자동사냥 파일
-          <span style="display:block; color:#99a3c4; font-size:11px; margin-top:4px;">외부 링크 1</span>
-        </a>
-        <a href="https://example.com" target="_blank" rel="noopener noreferrer" style="display:block; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.025); color:#dfe6ff; text-decoration:none; font-size:13px;">
-          오픈채팅 / 디스코드
-          <span style="display:block; color:#99a3c4; font-size:11px; margin-top:4px;">외부 링크 2</span>
-        </a>
+    <div class="right-panel">
+      <div id="displayArea">
+        <!-- 초기 이미지 출력 (압축파일 내 경로) -->
+        <img src="images/home.jpeg" class="content-img" onerror="this.src='https://via.placeholder.com/800x1200/111/3fff00?text=HOME+IMAGE'">
       </div>
-    </aside>
-
-    <main class="main">
-      <section class="hero">
-        <div class="hero-copy">
-          <span class="eyebrow">Blade & Soul 회상서버</span>
-          <h2>Blade & Soul 회상서버<br>입문자를 위한 가이드!!</h2>
-          <p>회상서버를 처음접하시는 분들을위한 가이드입니다.</p>
-          <div class="hero-actions">
-            <button class="cta" data-jump="home">빠른 시작 보기</button>
-            
-          </div>
-        </div>
-      </section>
-
-      <section class="panel content-shell">
-        <div class="content-head">
-          <div>
-            <h3 id="contentTitle">캐릭생성 & 기초세팅</h3>
-            <p id="contentSubtitle">블소 처음하시는분들을 위한 케릭 생성부터 기본세팅까지!</p>
-          </div>
-          <div class="content-meta" id="contentCategory">SECTION : SETTING</div>
-        </div>
-        <div class="content-body" id="contentBody"></div>
-      </section>
-
-      <div class="footerbar panel">
-        <div></div>
-        <div id="rotatingTip">TIP: 케릭터는 이쁘게 꾸미기!!!</div>
-      </div>
-    </main>
-
-    <aside class="panel rightbar">
-      <div class="status">
-        <strong>회상서버 가이드</strong>
-        <p>디스코드 게시판에 가이드가있긴한데 한곳에 모아서 보기 편하도록 제작했습니다.</p>
-      </div>
-
-      <article class="panel card tips">
-        <h3>유용한 팁</h3>
-        <div class="tip">홍보는 매일하는것이 좋다!</div>
-        <div class="tip">직업은 신중하게~ 내가 재미있는걸로 하자</div>
-        <div class="tip">신석사용처는 신중하게 결정하고 사용하자</div>
-      </article>
-    </aside>
+    </div>
   </div>
 
-  <script>
-    const menuButtons = document.querySelectorAll('.nav button');
-    const jumpers = document.querySelectorAll('[data-jump]');
-    const contentTitle = document.getElementById('contentTitle');
-    const contentSubtitle = document.getElementById('contentSubtitle');
-    const contentCategory = document.getElementById('contentCategory');
-    const contentBody = document.getElementById('contentBody');
-    const rotatingTip = document.getElementById('rotatingTip');
+  <div class="bottom-footer" id="rotatingTip">TIP: 캐릭터 생성 시 문파 가입 여부를 먼저 확인하세요.</div>
 
-    const contentMap = {
-      home: {
-        category: 'SETTING',
-        title: '캐릭생성 & 기초세팅',
-        subtitle: '처음 시작하는 유저가 가장 먼저 확인해야 하는 기본 세팅 안내(출처:블루님)',
-        image: 'images/home.jpeg'
-      },
-      start: {
-        category: 'FARM',
-        title: '초반 파밍 순서',
-        subtitle: '초반아이템 파밍을 위한 가이드 라인입니다..',
-        type: 'farmRoute',
-        image: 'images/start.jpeg'
-      },
-      control: {
-        category: 'DROP',
-        title: '아이템 드랍 정보',
-        subtitle: '던전별 드랍리스트 확인할 수 있습니다.(출처:다운님, 블루님)',
-        type: 'dropFixed',
-        image: 'images/control.jpeg'
-      },
-      class: {
-        category: 'CLAN',
-        title: '문파 정보',
-        subtitle: '세력별 대표 문파 소개',
-        image: 'images/class.jpeg'
-      },
-      faq: {
-        category: '유용한정보',
-        title: 'UI설정등 유용한정보',
-        subtitle: 'UI설정등 게임설정법이외 유용한정보',
-        image: 'images/faq.jpeg'
-      },
-      extra: {
-        category: 'FAQ',
-        title: '자주 묻는 질문(출처 : 블루님)',
-        subtitle: '회상서버 초보자가 가장 많이 물어보는 질문 정리',
-        image: 'images/extra.jpeg'
-      }
+  <script>
+    const navBtns = document.querySelectorAll('#mainNav button');
+    const displayArea = document.getElementById('displayArea');
+
+    let excelLoaded = false;
+    let excelLoading = false;
+    let selectedDungeonId = null;
+    let selectedFarmIndex = 0;
+    let dropRows = [];
+    let dungeonRows = [];
+    const dungeonMap = new Map();
+
+    const config = {
+      home: { label: 'SETTING', title: '캐릭터 생성 및<br>기초 세팅', desc: '최적의 UI 세팅과 초기 필수 퀘스트 동선을 정리했습니다.', type: 'image', path: 'images/home.jpeg' },
+      start: { label: 'FARMING', title: '초반 파밍<br>장비 가이드', desc: '무기, 보패, 액세서리 순서대로 맞추는 효율적인 성장 루트입니다.', type: 'farm' },
+      control: { label: 'DATABASE', title: '던전별 아이템<br>드랍 리스트', desc: '던전명이나 아이템명을 검색하여 드랍 정보를 확인하세요.', type: 'drop' },
+      class: { label: 'CLAN', title: '서버 주요 문파<br>가입 안내', desc: '함께할 동료를 찾으시나요? 대표 문파 정보를 확인하세요.', type: 'image', path: 'images/class.jpeg' },
+      faq: { label: 'OPTION', title: '프레임 최적화<br>상세 설정', desc: '쾌적한 플레이를 위한 필수적인 게임 내부 설정 가이드입니다.', type: 'image', path: 'images/faq.jpeg' },
+      extra: { label: 'FAQ', title: '초보자<br>자주 묻는 질문', desc: '홍보 보상, 신석 사용처 등 필수 지식을 모았습니다.', type: 'image', path: 'images/extra.jpeg' }
     };
 
-    function setActiveMenu(id) {
-      menuButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.target === id));
+    const farmingSteps = [
+      { title: '천상분지', image: 'images/farm/01-skyfield.jpeg', desc: '1순서 파밍 구간입니다. 천상분지 이미지와 연결했습니다.' },
+      { title: '흑룡의환영', image: 'images/farm/02-blackdragon.jpeg', desc: '2순서 파밍 구간입니다. 흑룡의환영 이미지와 연결했습니다.' },
+      { title: '얼음창고', image: 'images/farm/03-icewarehouse.jpeg', desc: '3순서 파밍 구간입니다. 얼음창고 이미지와 연결했습니다.' },
+      { title: '부유재단', image: 'images/farm/04-floatingaltar.jpeg', desc: '4순서 파밍 구간입니다. 부유재단 이미지와 연결했습니다.' },
+      { title: '저주받은해적선', image: 'images/farm/05-pirateship.jpeg', desc: '5순서 파밍 구간입니다. 저주받은해적선 이미지와 연결했습니다.' },
+      { title: '천명부화장', image: 'images/farm/06-destinygrave.jpeg', desc: '6순서 파밍 구간입니다. 천명부화장 이미지와 연결했습니다.' },
+      { title: '귀면극단', image: 'images/farm/07-masktheater.jpeg', desc: '7순서 파밍 구간입니다. 귀면극단 이미지와 연결했습니다.' }
+    ];
+
+    function renderFarmingGuide() {
+      const currentStep = farmingSteps[selectedFarmIndex] || farmingSteps[0];
+      const buttons = farmingSteps.map((step, index) =>
+        '<button class="farm-top-btn ' + (index === selectedFarmIndex ? 'active' : '') + '" data-index="' + index + '">' + step.title + '</button>'
+      ).join('');
+
+      displayArea.innerHTML =
+        '<div class="farm-button-wrap" id="farmButtonWrap">' + buttons + '</div>' +
+        '<article class="farm-detail">' +
+          '<div class="farm-detail-head">' +
+            '<h3>' + currentStep.title + '</h3>' +
+            '<span class="farm-badge">' + String(selectedFarmIndex + 1).padStart(2, '0') + ' / ' + String(farmingSteps.length).padStart(2, '0') + '</span>' +
+          '</div>' +
+          '<p>' + currentStep.desc + '</p>' +
+          '<img src="' + currentStep.image + '" alt="' + currentStep.title + '" onerror="this.style.display=\'none\'">' +
+        '</article>';
+
+      document.querySelectorAll('#farmButtonWrap .farm-top-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          selectedFarmIndex = Number(button.dataset.index);
+          renderFarmingGuide();
+        });
+      });
     }
 
+    function switchView(id) {
+      const data = config[id];
+      navBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.id === id));
+      
+      document.getElementById('sideLabel').textContent = data.label;
+      document.getElementById('sideTitle').innerHTML = data.title;
+      document.getElementById('sideDesc').textContent = data.desc;
 
-    
-    let fixedDropData = [];
-    let fixedDropDataLoaded = false;
-    let fixedDropDataError = '';
-
-    function mapRowsBySheet(jsonRows, type) {
-      if (type === 'dungeons') {
-        return jsonRows.map(row => ({
-          id: String(row['던전ID'] || row['id'] || '').trim(),
-          name: String(row['던전명'] || row['name'] || '').trim(),
-          mainImage: String(row['메인이미지'] || row['mainImage'] || '').trim(),
-          description: String(row['설명'] || row['description'] || '').trim(),
-          videos: [],
-          dropsByGrade: {}
-        })).filter(row => row.id);
+      displayArea.innerHTML = '';
+      if (data.type === 'image') {
+        displayArea.innerHTML = `<img src="${data.path}" class="content-img" onerror="this.src='https://via.placeholder.com/800x1000/111/3fff00?text=IMAGE+NOT+FOUND'">`;
+      } else if (data.type === 'farm') {
+        renderFarmingGuide();
+      } else if (data.type === 'drop') {
+        renderDropSearch();
       }
-
-      if (type === 'videos') {
-        return jsonRows.map(row => ({
-          dungeonId: String(row['던전ID'] || row['dungeonId'] || '').trim(),
-          title: String(row['영상제목'] || row['title'] || '').trim(),
-          url: String(row['영상링크'] || row['url'] || '').trim()
-        })).filter(row => row.dungeonId);
-      }
-
-      return jsonRows.map(row => ({
-        dungeonId: String(row['던전ID'] || row['dungeonId'] || '').trim(),
-        grade: String(row['등급'] || row['grade'] || '기타').trim(),
-        item: String(row['아이템'] || row['item'] || '').trim(),
-        image: String(row['이미지2'] || row['image'] || '').trim()
-      })).filter(row => row.dungeonId);
     }
 
-    async function loadFixedDropData() {
-      if (fixedDropDataLoaded) return fixedDropData;
+    function cellText(value) {
+      return value === undefined || value === null ? '' : String(value).trim();
+    }
+
+    function sheetToObjects(sheet) {
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+      if (!rows.length) return [];
+      const headers = rows[0].map(cellText);
+      return rows.slice(1)
+        .filter(row => row.some(value => cellText(value) !== ''))
+        .map(row => {
+          const obj = {};
+          headers.forEach((header, index) => {
+            if (header) obj[header] = cellText(row[index]);
+          });
+          return obj;
+        });
+    }
+
+    async function loadExcelData() {
+      if (excelLoaded || excelLoading) return;
+      excelLoading = true;
       try {
-        const response = await fetch('./data/info_search_data.xlsx');
-        if (!response.ok) {
-          throw new Error('엑셀 파일을 불러오지 못했습니다.');
+        if (typeof XLSX === 'undefined') {
+          throw new Error('XLSX 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단 여부를 확인하세요.');
         }
 
-        const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const response = await fetch('data/info_search_data.xlsx', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`엑셀 파일을 찾을 수 없습니다. 경로: data/info_search_data.xlsx (${response.status})`);
+        }
 
+        const buffer = await response.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
         const dungeonSheet = workbook.Sheets['던전목록'];
-        const videoSheet = workbook.Sheets['공략영상'];
         const dropSheet = workbook.Sheets['드랍목록'];
 
-        if (!dungeonSheet || !videoSheet || !dropSheet) {
-          throw new Error('엑셀 시트 이름을 확인해주세요. (던전목록 / 공략영상 / 드랍목록 필요)');
+        if (!dungeonSheet || !dropSheet) {
+          throw new Error('필수 시트명(던전목록, 드랍목록)을 찾을 수 없습니다.');
         }
 
-        const dungeonRows = mapRowsBySheet(XLSX.utils.sheet_to_json(dungeonSheet, { defval: '' }), 'dungeons');
-        const videoRows = mapRowsBySheet(XLSX.utils.sheet_to_json(videoSheet, { defval: '' }), 'videos');
-        const dropRows = mapRowsBySheet(XLSX.utils.sheet_to_json(dropSheet, { defval: '' }), 'drops');
-
-        const dungeonMap = {};
-        dungeonRows.forEach(d => {
-          dungeonMap[d.id] = d;
+        dungeonRows = sheetToObjects(dungeonSheet);
+        dropRows = sheetToObjects(dropSheet);
+        dungeonMap.clear();
+        dungeonRows.forEach(row => {
+          const id = cellText(row['던전ID']);
+          if (id) dungeonMap.set(id.toUpperCase(), cellText(row['던전명']));
         });
 
-        videoRows.forEach(v => {
-          if (dungeonMap[v.dungeonId]) {
-            dungeonMap[v.dungeonId].videos.push({
-              title: v.title,
-              url: v.url
-            });
-          }
-        });
+        dropRows = dropRows.map(row => {
+          const dungeonId = cellText(row['던전ID']);
+          return {
+            dungeonId,
+            dungeonKey: dungeonId.toUpperCase(),
+            dungeonName: dungeonMap.get(dungeonId.toUpperCase()) || dungeonId,
+            grade: cellText(row['등급']),
+            item: cellText(row['아이템'])
+          };
+        }).filter(row => row.dungeonId && row.item);
 
-        dropRows.forEach(item => {
-          if (dungeonMap[item.dungeonId]) {
-            if (!dungeonMap[item.dungeonId].dropsByGrade[item.grade]) {
-              dungeonMap[item.dungeonId].dropsByGrade[item.grade] = [];
-            }
-            dungeonMap[item.dungeonId].dropsByGrade[item.grade].push({
-              item: item.item,
-              image: item.image
-            });
-          }
-        });
-
-        fixedDropData = Object.values(dungeonMap);
-        fixedDropDataLoaded = true;
-        fixedDropDataError = '';
-        return fixedDropData;
+        selectedDungeonId = dropRows[0]?.dungeonKey || dungeonRows[0]?.['던전ID']?.toUpperCase() || null;
+        excelLoaded = true;
       } catch (error) {
-        fixedDropDataError = error.message || '엑셀 연동 중 오류가 발생했습니다.';
-        fixedDropData = [];
-        return fixedDropData;
-      }
-    }
-
-    async function renderFixedDropContent() {
-
-      contentBody.innerHTML = `
-        <div class="drop-fixed-wrap">
-          <div class="drop-search-box">
-            <input id="itemSearchInput" class="drop-search-input" type="text" placeholder="아이템명 검색" />
-            <div style="font-size:13px; color:var(--content-muted);">data/info_search_data.xlsx 파일을 직접 읽습니다. 엑셀 수정 후 다시 업로드하면 드랍정보가 바뀝니다.</div>
-          </div>
-          <div id="dungeonCardGrid" class="dungeon-card-grid"></div>
-          <div id="dropPanel" class="drop-panel"></div>
-        </div>
-      `;
-
-      await loadFixedDropData();
-
-      const searchInput = document.getElementById('itemSearchInput');
-      const grid = document.getElementById('dungeonCardGrid');
-      const panel = document.getElementById('dropPanel');
-
-      if (fixedDropDataError) {
-        grid.innerHTML = `<div class="drop-empty-note" style="grid-column:1 / -1;">${fixedDropDataError}</div>`;
-        panel.innerHTML = `<div class="drop-empty-note">엑셀 파일 경로: <code>data/info_search_data.xlsx</code><br>시트명: <code>던전목록</code>, <code>공략영상</code>, <code>드랍목록</code></div>`;
-        return;
-      }
-
-      if (!fixedDropData.length) {
-        grid.innerHTML = `<div class="drop-empty-note" style="grid-column:1 / -1;">엑셀 데이터가 비어 있습니다.</div>`;
-        panel.innerHTML = '';
-        return;
-      }
-
-      let currentDungeonId = fixedDropData[0] ? fixedDropData[0].id : null;
-      let currentKeyword = '';
-
-      function getVisibleDungeons() {
-        if (!currentKeyword) return fixedDropData;
-        const q = currentKeyword.toLowerCase();
-        return fixedDropData.filter(d =>
-          Object.values(d.dropsByGrade || {})
-            .flat()
-            .some(item => (item.item || '').toLowerCase().includes(q))
-        );
-      }
-
-      function renderDungeonPanel() {
-        const dungeon = fixedDropData.find(d => d.id === currentDungeonId);
-        if (!dungeon) {
-          panel.innerHTML = '';
-          return;
-        }
-
-        const gradeOrder = ['입문', '일반', '숙련'];
-        const allGrades = Object.keys(dungeon.dropsByGrade || {});
-        const grades = gradeOrder.filter(g => allGrades.includes(g)).concat(allGrades.filter(g => !gradeOrder.includes(g)));
-
-        const filteredDrops = {};
-        grades.forEach(grade => {
-          const items = (dungeon.dropsByGrade[grade] || []).filter(item =>
-            !currentKeyword || (item.item || '').toLowerCase().includes(currentKeyword.toLowerCase())
-          );
-          filteredDrops[grade] = items;
-        });
-
-        const hasAnyItem = Object.values(filteredDrops).some(arr => arr.length);
-
-        const videoHtml = (dungeon.videos || []).length
-          ? `<div class="video-links">${dungeon.videos.map(v => `<a class="video-link" href="${v.url}" target="_blank" rel="noopener noreferrer">${v.title}</a>`).join('')}</div>`
-          : `<div class="drop-empty-note">등록된 공략 영상이 없습니다.</div>`;
-
-        let tableHtml = '';
-        if (hasAnyItem) {
-          tableHtml = `
-            <div class="drop-grade-table-wrap">
-              <table class="drop-grade-table">
-                <thead>
-                  <tr><th colspan="${grades.length}">등급</th></tr>
-                  <tr>${grades.map(grade => `<th class="grade-name">${grade}</th>`).join('')}</tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    ${grades.map(grade => {
-                      const items = filteredDrops[grade] || [];
-                      const inner = items.length
-                        ? items.map(item => `
-                            <div class="drop-item-box">
-                              <div class="drop-item-name">${item.item}</div>
-                              ${item.image ? `<div class="drop-item-sub">${item.image}</div>` : ''}
-                            </div>
-                          `).join('')
-                        : `<div class="drop-item-box"><div class="drop-item-sub">-</div></div>`;
-                      return `<td><div class="drop-item-list">${inner}</div></td>`;
-                    }).join('')}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          `;
-        } else {
-          tableHtml = `<div class="drop-empty-note">현재 검색어에 해당하는 드랍 아이템이 이 던전에는 없습니다.</div>`;
-        }
-
-        panel.innerHTML = `
-          <div class="drop-panel-head">
-            <h4>${dungeon.name}</h4>
-            <p>${dungeon.description || ''}</p>
-          </div>
-          ${videoHtml}
-          ${tableHtml}
-        `;
-      }
-
-      function renderDungeonCards() {
-        const visible = getVisibleDungeons();
-        if (!visible.length) {
-          grid.innerHTML = `<div class="drop-empty-note" style="grid-column:1 / -1;">검색된 아이템이 없습니다.</div>`;
-          panel.innerHTML = '';
-          return;
-        }
-
-        if (!visible.some(d => d.id === currentDungeonId)) {
-          currentDungeonId = visible[0].id;
-        }
-
-        grid.innerHTML = visible.map(d => `
-          <button class="dungeon-card ${d.id === currentDungeonId ? 'active' : ''}" data-dungeon-id="${d.id}">
-            <div class="dungeon-card-title">${d.name}</div>
-            <div class="dungeon-card-desc">${d.description || ''}</div>
-          </button>
-        `).join('');
-
-        grid.querySelectorAll('[data-dungeon-id]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            currentDungeonId = btn.dataset.dungeonId;
-            renderDungeonCards();
-            renderDungeonPanel();
-          });
-        });
-
-        renderDungeonPanel();
-      }
-
-      searchInput.addEventListener('input', (e) => {
-        currentKeyword = e.target.value.trim();
-        renderDungeonCards();
-      });
-
-      renderDungeonCards();
-    }
-
-
-    const farmRouteSteps = [
-      { key: 'skyfield', label: '천상분지', image: 'images/farm/01-skyfield.jpeg' },
-      { key: 'blackdragon', label: '흑룡의환영', image: 'images/farm/02-blackdragon.jpeg' },
-      { key: 'icewarehouse', label: '얼음창고', image: 'images/farm/03-icewarehouse.jpeg' },
-      { key: 'floatingaltar', label: '부유제단', image: 'images/farm/04-floatingaltar.jpeg' },
-      { key: 'pirateship', label: '저주받은 해적선', image: 'images/farm/05-pirateship.jpeg' },
-      { key: 'destinygrave', label: '천명부화장', image: 'images/farm/06-destinygrave.jpeg' },
-      { key: 'masktheater', label: '귀면극단', image: 'images/farm/07-masktheater.jpeg' }
-    ];
-
-    function renderFarmRouteContent() {
-      contentBody.innerHTML = `
-        <div class="farm-route-wrap">
-          <div class="farm-route-head">
-            <h4>초반 파밍 순서</h4>
-            <p>아래의 순서대로 파밍단계를 확인할수있습니다. 버튼을 클릭하면 해당던전에 대한 팁이 나옵니다.</p>
-          </div>
-          <div class="farm-route-nav" id="farmRouteNav"></div>
-          <div class="farm-image-panel" id="farmImagePanel"></div>
-        </div>
-      `;
-
-      const nav = document.getElementById('farmRouteNav');
-      const panel = document.getElementById('farmImagePanel');
-      let activeKey = '';
-
-      nav.innerHTML = farmRouteSteps.map((step, index) => `
-        ${index > 0 ? '<span class="farm-route-arrow">></span>' : ''}
-        <button class="farm-route-btn" data-farm-key="${step.key}">${step.label}</button>
-      `).join('');
-
-      function renderFarmImage(step) {
-        if (!step) {
-          panel.classList.remove('show');
-          panel.innerHTML = '';
-          return;
-        }
-
-        panel.classList.add('show');
-        panel.innerHTML = `
-          <div class="farm-image-head">
-            <div>
-              <strong>${step.label}</strong><br>
-              <span></span>
-            </div>
-          </div>
-          <div class="farm-image-wrap">
-            <img class="farm-image" src="${step.image}" alt="${step.label}" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='block';">
-          </div>
-          <div class="farm-image-note" style="display:none;">
-            현재 연결된 이미지를 찾지 못했습니다.<br>
-            아래 경로에 파일을 넣어주세요.<br><br>
-            <code>${step.image}</code>
+        displayArea.innerHTML = `
+          <div style="padding:22px;border:1px solid rgba(255,255,255,0.18);border-radius:12px;background:#111;line-height:1.7;color:#ddd;">
+            <strong style="color:#ff6b6b;">엑셀 데이터를 불러오지 못했습니다.</strong><br>
+            ${error.message}<br><br>
+            <span style="color:#aaa;">로컬에서 index.html을 직접 열면 브라우저 보안 정책 때문에 fetch가 막힐 수 있습니다. GitHub Pages 같은 웹서버에 올리거나 로컬 서버로 실행하세요.</span>
           </div>
         `;
+      } finally {
+        excelLoading = false;
       }
-
-      nav.querySelectorAll('[data-farm-key]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          activeKey = btn.dataset.farmKey;
-          nav.querySelectorAll('.farm-route-btn').forEach(el => {
-            el.classList.toggle('active', el.dataset.farmKey === activeKey);
-          });
-          const selected = farmRouteSteps.find(step => step.key === activeKey);
-          renderFarmImage(selected);
-        });
-      });
-
-      renderFarmImage(null);
     }
 
-    function renderImageContent(section) {
+    function getVisibleDungeons() {
+      const ids = new Set(dropRows.map(row => row.dungeonKey));
+      const fromDungeonSheet = dungeonRows
+        .map(row => ({ id: cellText(row['던전ID']).toUpperCase(), name: cellText(row['던전명']) }))
+        .filter(row => row.id && ids.has(row.id));
 
+      const missing = [...ids]
+        .filter(id => !fromDungeonSheet.some(row => row.id === id))
+        .map(id => ({ id, name: dungeonMap.get(id) || id }));
 
-      contentBody.innerHTML = `
-        <div class="image-wrap">
-          <div class="image-card">
-            <div class="image-card-head">${section.title}</div>
-            <img class="guide-image" src="${section.image}" alt="${section.title}" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='block';" />
-          </div>
-          <div class="image-note" style="display:none;">
-            현재 연결된 JPEG 파일을 찾지 못했습니다.<br>
-            아래 경로에 이미지를 넣어주세요.<br><br>
-            <code>${section.image}</code>
-          </div>
-        </div>
+      return [...fromDungeonSheet, ...missing];
+    }
+
+    function renderDropTable() {
+      const keyword = document.getElementById('dropSearchInput')?.value.trim().toLowerCase() || '';
+      const rows = dropRows.filter(row => {
+        const matchDungeon = !selectedDungeonId || row.dungeonKey === selectedDungeonId;
+        const haystack = `${row.dungeonName} ${row.grade} ${row.item}`.toLowerCase();
+        return matchDungeon && (!keyword || haystack.includes(keyword));
+      });
+
+      const tbody = document.getElementById('dropTableBody');
+      const counter = document.getElementById('dropCounter');
+      if (!tbody) return;
+
+      counter.textContent = `${rows.length.toLocaleString()}개 항목`;
+      tbody.innerHTML = rows.length ? rows.map(row => `
+        <tr>
+          <td>${row.dungeonName}</td>
+          <td>${row.grade}</td>
+          <td>${row.item}</td>
+        </tr>
+      `).join('') : `
+        <tr><td colspan="3" style="color:#888;">검색 결과가 없습니다.</td></tr>
       `;
     }
 
-    async function openContent(id) {
-      const section = contentMap[id];
-      if (!section) return;
-      setActiveMenu(id);
-      contentTitle.textContent = section.title;
-      contentSubtitle.textContent = section.subtitle;
-      contentCategory.textContent = `SECTION : ${section.category}`;
-      if (section.type === 'dropFixed') {
-        await renderFixedDropContent();
-      } else if (section.type === 'farmRoute') {
-        renderFarmRouteContent();
-      } else {
-        renderImageContent(section);
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    async function renderDropSearch() {
+      displayArea.innerHTML = `
+        <div style="padding:22px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;background:#111;color:#aaa;">엑셀 데이터를 불러오는 중입니다...</div>
+      `;
+
+      await loadExcelData();
+      if (!excelLoaded) return;
+
+      const dungeons = getVisibleDungeons();
+      if (!selectedDungeonId && dungeons.length) selectedDungeonId = dungeons[0].id;
+
+      displayArea.innerHTML = `
+        <input type="text" id="dropSearchInput" class="search-box" placeholder="🔍 아이템명 / 던전명 / 등급 검색...">
+        <div class="dungeon-tabs" id="dungeonTabs">
+          ${dungeons.map((dungeon, index) => `
+            <div class="tab-item ${dungeon.id === selectedDungeonId || (!selectedDungeonId && index === 0) ? 'active' : ''}" data-id="${dungeon.id}">${dungeon.name}</div>
+          `).join('')}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:#aaa;font-size:13px;">
+          <span>출처: data/info_search_data.xlsx</span>
+          <span id="dropCounter"></span>
+        </div>
+        <table class="drop-table">
+          <thead><tr><th>던전</th><th>등급</th><th>아이템 명칭</th></tr></thead>
+          <tbody id="dropTableBody"></tbody>
+        </table>
+      `;
+
+      document.getElementById('dropSearchInput').addEventListener('input', renderDropTable);
+      document.querySelectorAll('#dungeonTabs .tab-item').forEach(tab => {
+        tab.addEventListener('click', () => {
+          selectedDungeonId = tab.dataset.id;
+          document.querySelectorAll('#dungeonTabs .tab-item').forEach(item => item.classList.toggle('active', item === tab));
+          renderDropTable();
+        });
+      });
+      renderDropTable();
     }
 
-    menuButtons.forEach(btn => btn.addEventListener('click', () => { openContent(btn.dataset.target); }));
-    jumpers.forEach(btn => btn.addEventListener('click', () => { openContent(btn.dataset.jump); }));
+    navBtns.forEach(btn => btn.onclick = () => switchView(btn.dataset.id));
 
-    const tipTexts = [
-      'TIP: 빠르게 성장하실려면 홍보는 필수!!',
-      'TIP: 문파가입하셔서 던전돌아야지 빠르게 성장합니다~! 함께해요',
-    ];
-    let tipIndex = 0;
+    // 팁 로테이션
+    const tips = ["TIP: 홍보 보상은 매일 자정에 초기화됩니다.", "TIP: 문파 가입 시 추가 능력치 버프가 있습니다."];
+    let tIdx = 0;
     setInterval(() => {
-      tipIndex = (tipIndex + 1) % tipTexts.length;
-      rotatingTip.textContent = tipTexts[tipIndex];
-    }, 3800);
-
-    openContent('home');
+      tIdx = (tIdx + 1) % tips.length;
+      document.getElementById('rotatingTip').textContent = tips[tIdx];
+    }, 5000);
   </script>
 </body>
 </html>
