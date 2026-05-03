@@ -205,7 +205,7 @@
     <div class="left-panel">
       <div class="category-label" id="sideLabel">SETTING</div>
       <h1 class="main-title" id="sideTitle">캐릭터 생성 및<br>기초 세팅</h1>
-      <p class="main-desc" id="sideDesc">회상서버를 시작하는 첫걸음! 최적화된 게임 환경과 초기 동선을 확인하세요.</p>
+      <p class="main-desc" id="sideDesc">회상서버를 시작하는 첫걸음! (출처 : 블루님)</p>
       <div class="action-btn">
         <span>상세 가이드 보기</span>
         <div class="circle">→</div>
@@ -220,7 +220,7 @@
     </div>
   </div>
 
-  <div class="bottom-footer" id="rotatingTip">TIP: 캐릭터 생성 시 문파 가입 여부를 먼저 확인하세요.</div>
+  <div class="bottom-footer" id="rotatingTip">TIP: 캐릭터 생성 후 문파 가입하시는걸 추천!!.</div>
 
   <script>
     const navBtns = document.querySelectorAll('#mainNav button');
@@ -235,22 +235,22 @@
     const dungeonMap = new Map();
 
     const config = {
-      home: { label: 'SETTING', title: '캐릭터 생성 및<br>기초 세팅', desc: '최적의 UI 세팅과 초기 필수 퀘스트 동선을 정리했습니다.', type: 'image', path: 'images/home.jpeg' },
-      start: { label: 'FARMING', title: '초반 파밍<br>장비 가이드', desc: '무기, 보패, 액세서리 순서대로 맞추는 효율적인 성장 루트입니다.', type: 'farm' },
+      home: { label: 'SETTING', title: '캐릭터 생성 및<br>기초 세팅', desc: '최적의 세팅과 초기 동선을 정리했습니다.', type: 'image', path: 'images/home.jpeg' },
+      start: { label: 'FARMING', title: '초반 파밍<br>장비 가이드', desc: '장비를 업글하는 효율적인 성장 루트입니다.', type: 'farm' },
       control: { label: 'DATABASE', title: '던전별 아이템<br>드랍 리스트', desc: '던전명이나 아이템명을 검색하여 드랍 정보를 확인하세요.', type: 'drop' },
       class: { label: 'CLAN', title: '서버 주요 문파<br>가입 안내', desc: '함께할 동료를 찾으시나요? 대표 문파 정보를 확인하세요.', type: 'image', path: 'images/class.jpeg' },
       faq: { label: 'OPTION', title: '프레임 최적화<br>상세 설정', desc: '쾌적한 플레이를 위한 필수적인 게임 내부 설정 가이드입니다.', type: 'image', path: 'images/faq.jpeg' },
-      extra: { label: 'FAQ', title: '초보자<br>자주 묻는 질문', desc: '홍보 보상, 신석 사용처 등 필수 지식을 모았습니다.', type: 'image', path: 'images/extra.jpeg' }
+      extra: { label: 'FAQ', title: '초보자<br>자주 묻는 질문', desc: '서버내 자주묻는 질문들을 모아봤습니다!.', type: 'image', path: 'images/extra.jpeg' }
     };
 
     const farmingSteps = [
-      { title: '천상분지', image: 'images/farm/01-skyfield.jpeg', desc: '1순서 파밍 구간입니다. 천상분지 이미지와 연결했습니다.' },
-      { title: '흑룡의환영', image: 'images/farm/02-blackdragon.jpeg', desc: '2순서 파밍 구간입니다. 흑룡의환영 이미지와 연결했습니다.' },
-      { title: '얼음창고', image: 'images/farm/03-icewarehouse.jpeg', desc: '3순서 파밍 구간입니다. 얼음창고 이미지와 연결했습니다.' },
-      { title: '부유재단', image: 'images/farm/04-floatingaltar.jpeg', desc: '4순서 파밍 구간입니다. 부유재단 이미지와 연결했습니다.' },
-      { title: '저주받은해적선', image: 'images/farm/05-pirateship.jpeg', desc: '5순서 파밍 구간입니다. 저주받은해적선 이미지와 연결했습니다.' },
-      { title: '천명부화장', image: 'images/farm/06-destinygrave.jpeg', desc: '6순서 파밍 구간입니다. 천명부화장 이미지와 연결했습니다.' },
-      { title: '귀면극단', image: 'images/farm/07-masktheater.jpeg', desc: '7순서 파밍 구간입니다. 귀면극단 이미지와 연결했습니다.' }
+      { title: '천상분지', image: 'images/farm/01-skyfield.jpeg', desc: '천상분지.' },
+      { title: '흑룡의환영', image: 'images/farm/02-blackdragon.jpeg', desc: '흑룡의환영' },
+      { title: '얼음창고', image: 'images/farm/03-icewarehouse.jpeg', desc: '얼음창고' },
+      { title: '부유재단', image: 'images/farm/04-floatingaltar.jpeg', desc: '부유재단' },
+      { title: '저주받은해적선', image: 'images/farm/05-pirateship.jpeg', desc: '저주받은해적선' },
+      { title: '천명부화장', image: 'images/farm/06-destinygrave.jpeg', desc: '천명부화장' },
+      { title: '귀면극단', image: 'images/farm/07-masktheater.jpeg', desc: '귀면극단' }
     ];
 
     function renderFarmingGuide() {
