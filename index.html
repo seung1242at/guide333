@@ -28,16 +28,17 @@
       z-index: 1000;
       background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
     }
-    .header .logo { font-size: 20px; font-weight: 800; }
-    .header-nav { display: flex; gap: 30px; }
+    .header .logo { font-size: 22px; font-weight: 800; }
+    .header-nav { display: flex; gap: 36px; }
     .header-nav button { 
       all: unset; cursor: pointer; color: var(--text-white); 
-      font-size: 14px; font-weight: 600; transition: var(--transition); 
+      font-size: 17px; font-weight: 700; line-height: 1.25; padding: 8px 2px;
+      transition: var(--transition); 
     }
     .header-nav button:hover, .header-nav button.active { color: var(--accent-green); }
     .header-auth { 
-      padding: 10px 25px; border-radius: 999px; background: var(--text-white); 
-      color: var(--bg-black); font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+      padding: 12px 28px; border-radius: 999px; background: var(--text-white); 
+      color: var(--bg-black); font-size: 14px; font-weight: 800; border: none; cursor: pointer;
     }
 
     /* 메인 레이아웃: 좌우 분할 */
@@ -172,7 +173,8 @@
       .left-panel { min-height: 360px; padding: 120px 28px 50px; }
       .right-panel { padding: 40px 24px 80px; overflow: visible; }
       .header { padding: 20px 24px; gap: 16px; flex-wrap: wrap; }
-      .header-nav { gap: 14px; flex-wrap: wrap; }
+      .header-nav { gap: 16px; flex-wrap: wrap; }
+      .header-nav button { font-size: 15px; padding: 6px 1px; }
       .bottom-footer { left: 28px; bottom: 20px; }
       .farm-button-wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); position: static; background: transparent; }
       .drop-grade-grid { grid-template-columns: 1fr; }
@@ -233,6 +235,892 @@
     let dropRows = [];
     let dungeonRows = [];
     const dungeonMap = new Map();
+
+    // 엑셀 로딩이 브라우저/캐시 문제로 실패해도 전체 등급이 보이도록 현재 엑셀 데이터를 함께 내장합니다.
+    const fallbackDungeonRows = [
+      {
+            "던전ID": "ice",
+            "던전명": "얼음창고",
+            "설명": ""
+      },
+      {
+            "던전ID": "BU",
+            "던전명": "부유재단",
+            "설명": ""
+      },
+      {
+            "던전ID": "DMT",
+            "던전명": "귀면극단",
+            "설명": ""
+      },
+      {
+            "던전ID": "HTC",
+            "던전명": "부화장",
+            "설명": ""
+      },
+      {
+            "던전ID": "PTS",
+            "던전명": "해적선",
+            "설명": ""
+      },
+      {
+            "던전ID": "NRS",
+            "던전명": "나류성지",
+            "설명": ""
+      },
+      {
+            "던전ID": "TRH",
+            "던전명": "선도원",
+            "설명": ""
+      },
+      {
+            "던전ID": "HGR",
+            "던전명": "제0 격납고",
+            "설명": ""
+      },
+      {
+            "던전ID": "RTP",
+            "던전명": "삼도천",
+            "설명": ""
+      },
+      {
+            "던전ID": "Bc",
+            "던전명": "흑룡교 비밀전당",
+            "설명": ""
+      },
+      {
+            "던전ID": "GG",
+            "던전명": "그루족 고도시",
+            "설명": ""
+      },
+      {
+            "던전ID": "Ba",
+            "던전명": "법기연구소",
+            "설명": ""
+      },
+      {
+            "던전ID": "Up",
+            "던전명": "대정기",
+            "설명": "악세 대정기 드랍정보"
+      },
+      {
+            "던전ID": "Upa",
+            "던전명": "돌파재료",
+            "설명": "악세 돌파재료 드랍정보"
+      }
+];
+    const fallbackDropRows = [
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "영석결정"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "월석결정"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "영단결정"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "선단결정"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "홍문팔각"
+      },
+      {
+            "던전ID": "BU",
+            "등급": "입문",
+            "아이템": "수호보석결정"
+      },
+      {
+            "던전ID": "BU",
+            "등급": "입문",
+            "아이템": "홍문보석결정"
+      },
+      {
+            "던전ID": "BU",
+            "등급": "입문",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "입문",
+            "아이템": "사화강"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "입문",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "사화강"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "상승무혼"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "상승보옥"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "청이린"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "천음목걸이"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "팔각석류석"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "청이린"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "사화강"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "상승무혼"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "상승보옥"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "청이린"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "천음목걸이"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "팔각석류석"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "입문",
+            "아이템": "태천주"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "입문",
+            "아이템": "태천강"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "입문",
+            "아이템": "진화석"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "진화석"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "태천주"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "태천강"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "입문",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "입문",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "입문",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "야만의정기"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "고급진화석"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "찬란한수호보석함"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "입문",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "입문",
+            "아이템": "천하조각"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "화룡의비늘"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "황귀린"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "선도원보물함"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "고급진화석"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "수호사성호박옥"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "제천의기운"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "제천귀걸이"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "입문",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "입문",
+            "아이템": "천하조각"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "황귀린"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "설영의정기"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "설영장갑"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "입문",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "입문",
+            "아이템": "천하조각"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "삼도천목걸이"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "황귀린"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "고급진화석"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "삼도천허리띠"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "흑교린"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "적심린"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "장풍허리띠"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "열풍반지"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "섬성황강옥"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "적심린"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "강풍장갑"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "돌풍목걸이"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "삼성석류석상자"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "공허조각"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "적심린"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "고귀한홍문각인서"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "대풍귀걸이"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "여명팔찌"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "화천장갑 : 설영의 대정기(제0 격납고)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "뇌운 목걸이 : 설영의 대정기(제0 격납고)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "금강허리띠 : 삼도천의 대정기(삼도천)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "설풍 귀걸이 : 삼도천의 대정기(삼도천)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "극X팔찌 : 제천의 대정기(선도원)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "설풍 반지 : 신아만의 대정기 (나류성지)"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "3단",
+            "아이템": "무신의 회랑 : 사가령"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "섭무팔찌 : 뒤틀린 천무궁"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "섭무허리띠 : 뒤틀린 천무궁"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "천음 목걸이 : 천명 부화장"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "설영장갑 : 제0 격납고"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "여명팔찌 : 법기 연구소"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "대풍귀걸이 : 법기 연구소"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "돌풍 목걸이 : 그루족 고도시"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "강풍장갑 : 그루족 고도시"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "장풍허리띠 : 흑룡교 비밀전당"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "열풍 반지 : 흑룡교 비밀전당"
+      }
+];
 
     const config = {
       home: { label: 'SETTING', title: '캐릭터 생성 및<br>기초 세팅', desc: '최적의 세팅과 초기 동선을 정리했습니다.', type: 'image', path: 'images/home.jpeg' },
@@ -315,21 +1203,56 @@
         });
     }
 
+    function normalizeDropData(sourceDungeonRows, sourceDropRows) {
+      const ignoredDungeonIds = new Set(['번골']);
+
+      dungeonMap.clear();
+      dungeonRows = (sourceDungeonRows || [])
+        .map(row => ({
+          '던전ID': cellText(row['던전ID']),
+          '던전명': cellText(row['던전명']),
+          '설명': cellText(row['설명'])
+        }))
+        .filter(row => row['던전ID'] && !ignoredDungeonIds.has(row['던전ID']));
+
+      dungeonRows.forEach(row => {
+        const id = cellText(row['던전ID']);
+        if (id) dungeonMap.set(id.toUpperCase(), cellText(row['던전명']) || id);
+      });
+
+      dropRows = (sourceDropRows || [])
+        .map(row => {
+          const dungeonId = cellText(row['던전ID']);
+          const dungeonKey = dungeonId.toUpperCase();
+          return {
+            dungeonId,
+            dungeonKey,
+            dungeonName: dungeonMap.get(dungeonKey) || dungeonId,
+            grade: normalizeGrade(row['등급']),
+            item: cellText(row['아이템'])
+          };
+        })
+        .filter(row => row.dungeonId && row.item && !ignoredDungeonIds.has(row.dungeonId));
+
+      const firstVisible = getVisibleDungeons()[0];
+      selectedDungeonId = firstVisible?.id || dropRows[0]?.dungeonKey || null;
+    }
+
     async function loadExcelData() {
       if (excelLoaded || excelLoading) return;
       excelLoading = true;
       try {
         if (typeof XLSX === 'undefined') {
-          throw new Error('XLSX 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단 여부를 확인하세요.');
+          throw new Error('XLSX 라이브러리를 불러오지 못했습니다. 내장 데이터를 사용합니다.');
         }
 
-        const response = await fetch('data/info_search_data.xlsx', { cache: 'no-store' });
+        const response = await fetch(`data/info_search_data.xlsx?v=${Date.now()}`, { cache: 'no-store' });
         if (!response.ok) {
           throw new Error(`엑셀 파일을 찾을 수 없습니다. 경로: data/info_search_data.xlsx (${response.status})`);
         }
 
         const buffer = await response.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: 'array' });
+        const workbook = XLSX.read(buffer, { type: 'array', cellDates: false, raw: false });
         const dungeonSheet = workbook.Sheets['던전목록'];
         const dropSheet = workbook.Sheets['드랍목록'];
 
@@ -337,35 +1260,12 @@
           throw new Error('필수 시트명(던전목록, 드랍목록)을 찾을 수 없습니다.');
         }
 
-        dungeonRows = sheetToObjects(dungeonSheet);
-        dropRows = sheetToObjects(dropSheet);
-        dungeonMap.clear();
-        dungeonRows.forEach(row => {
-          const id = cellText(row['던전ID']);
-          if (id) dungeonMap.set(id.toUpperCase(), cellText(row['던전명']));
-        });
-
-        dropRows = dropRows.map(row => {
-          const dungeonId = cellText(row['던전ID']);
-          return {
-            dungeonId,
-            dungeonKey: dungeonId.toUpperCase(),
-            dungeonName: dungeonMap.get(dungeonId.toUpperCase()) || dungeonId,
-            grade: cellText(row['등급']),
-            item: cellText(row['아이템'])
-          };
-        }).filter(row => row.dungeonId && row.item);
-
-        selectedDungeonId = dropRows[0]?.dungeonKey || dungeonRows[0]?.['던전ID']?.toUpperCase() || null;
+        normalizeDropData(sheetToObjects(dungeonSheet), sheetToObjects(dropSheet));
         excelLoaded = true;
       } catch (error) {
-        displayArea.innerHTML = `
-          <div style="padding:22px;border:1px solid rgba(255,255,255,0.18);border-radius:12px;background:#111;line-height:1.7;color:#ddd;">
-            <strong style="color:#ff6b6b;">엑셀 데이터를 불러오지 못했습니다.</strong><br>
-            ${error.message}<br><br>
-            <span style="color:#aaa;">로컬에서 index.html을 직접 열면 브라우저 보안 정책 때문에 fetch가 막힐 수 있습니다. GitHub Pages 같은 웹서버에 올리거나 로컬 서버로 실행하세요.</span>
-          </div>
-        `;
+        console.warn('[drop-data] 엑셀 로딩 실패, 내장 데이터로 대체합니다:', error);
+        normalizeDropData(fallbackDungeonRows, fallbackDropRows);
+        excelLoaded = true;
       } finally {
         excelLoading = false;
       }
@@ -562,7 +1462,7 @@
           `).join('')}
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:#aaa;font-size:13px;">
-          <span>출처: data/info_search_data.xlsx</span>
+          <span>출처: data/info_search_data.xlsx <small style="color:#777;">(리뉴얼/대정기/3단/6단/9단 포함)</small></span>
           <span id="dropCounter"></span>
         </div>
         <div id="dropResultArea"></div>
