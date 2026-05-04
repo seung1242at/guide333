@@ -154,8 +154,8 @@
     .drop-dungeon-card { border: 1px solid var(--border-color); background: #0b0b0b; border-radius: 14px; overflow: hidden; }
     .drop-dungeon-title { padding: 14px 16px; background: #151515; border-bottom: 1px solid var(--border-color); color: #fff; font-weight: 900; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
     .drop-dungeon-title small { color: var(--accent-green); font-size: 12px; white-space: nowrap; }
-    .drop-grade-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
-    .drop-grade-col { min-height: 120px; padding: 14px; border-right: 1px solid var(--border-color); }
+    .drop-grade-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0; }
+    .drop-grade-col { min-height: 120px; padding: 14px; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
     .drop-grade-col:last-child { border-right: 0; }
     .drop-grade-title { color: var(--accent-green); font-weight: 900; font-size: 14px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(63,255,0,0.18); }
     .drop-item-list { display: flex; flex-direction: column; gap: 7px; }
@@ -394,12 +394,20 @@
       }[char]));
     }
 
+    const gradeDisplayOrder = ['입문', '일반', '숙련', '리뉴얼', '대정기', '3단', '6단', '9단', '기타'];
+
     function normalizeGrade(grade) {
       const text = cellText(grade);
+      if (!text) return '기타';
       if (text.includes('입문')) return '입문';
       if (text.includes('일반')) return '일반';
       if (text.includes('숙련')) return '숙련';
-      return text || '기타';
+      if (text.includes('리뉴얼')) return '리뉴얼';
+      if (text.includes('대정기')) return '대정기';
+      if (/3\s*단/.test(text)) return '3단';
+      if (/6\s*단/.test(text)) return '6단';
+      if (/9\s*단/.test(text)) return '9단';
+      return text;
     }
 
     function normalizeSearchText(value) {
@@ -426,7 +434,7 @@
           dungeonGroups.set(dungeonKey, {
             dungeonKey,
             dungeonName: row.dungeonName,
-            grades: { '입문': [], '일반': [], '숙련': [], '기타': [] },
+            grades: {},
             total: 0
           });
         }
@@ -449,6 +457,15 @@
 
     function uniqueItems(items) {
       return [...new Set(items.filter(Boolean))];
+    }
+
+    function getOrderedGradeTitles(grades) {
+      const titles = Object.keys(grades).filter(title => uniqueItems(grades[title]).length > 0);
+      const known = gradeDisplayOrder.filter(title => titles.includes(title));
+      const unknown = titles
+        .filter(title => !gradeDisplayOrder.includes(title))
+        .sort((a, b) => a.localeCompare(b, 'ko'));
+      return [...known, ...unknown];
     }
 
     function renderGradeColumn(title, items) {
@@ -515,10 +532,9 @@
                 <small>${group.total.toLocaleString()}개 항목</small>
               </div>
               <div class="drop-grade-grid">
-                ${renderGradeColumn('입문', group.grades['입문'] || [])}
-                ${renderGradeColumn('일반', group.grades['일반'] || [])}
-                ${renderGradeColumn('숙련', group.grades['숙련'] || [])}
-                ${(group.grades['기타'] || []).length ? renderGradeColumn('기타', group.grades['기타']) : ''}
+                ${getOrderedGradeTitles(group.grades)
+                  .map(title => renderGradeColumn(title, group.grades[title] || []))
+                  .join('')}
               </div>
             </article>
           `).join('')}
