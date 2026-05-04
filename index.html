@@ -47,9 +47,18 @@
     }
     .header .logo {
       flex: 0 0 auto;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
       font-size: clamp(17px, 1.6vw, 22px);
       font-weight: 800;
       white-space: nowrap;
+    }
+    .header .logo-credit {
+      color: rgba(255,255,255,0.7);
+      font-size: clamp(10px, 0.85vw, 12px);
+      font-weight: 700;
+      letter-spacing: -0.2px;
     }
     .header-nav {
       flex: 1 1 auto;
@@ -65,13 +74,6 @@
       transition: var(--transition); 
     }
     .header-nav button:hover, .header-nav button.active { color: var(--accent-green); }
-    .creator-credit {
-      color: rgba(255,255,255,0.72);
-      font-size: 14px;
-      font-weight: 700;
-      margin: 12px 0 0;
-      letter-spacing: -0.2px;
-    }
 
     /* 메인 레이아웃: 좌우 분할 */
     .main-container {
@@ -237,9 +239,9 @@
         flex-wrap: wrap;
       }
       .header .logo { width: 100%; font-size: 18px; }
+      .header .logo-credit { font-size: 11px; }
       .header-nav { width: 100%; justify-content: flex-start; gap: 12px; flex-wrap: wrap; }
       .header-nav button { font-size: 14px; padding: 6px 1px; }
-      .creator-credit { font-size: 12px; margin-top: 10px; }
       .bottom-footer { left: 28px; bottom: 20px; }
       .farm-button-wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); position: static; background: transparent; }
       .drop-grade-grid { grid-template-columns: 1fr; }
@@ -265,7 +267,7 @@
 <body>
 
   <header class="header">
-    <div class="logo">B&S 회상서버</div>
+    <div class="logo">B&S 회상서버 <span class="logo-credit">[제작 : 혼천교 샵문파]</span></div>
     <nav class="header-nav" id="mainNav">
       <button class="active" data-id="home">캐릭생성 & 기초세팅</button>
       <button data-id="start">초반 파밍 순서</button>
@@ -280,7 +282,6 @@
     <div class="left-panel">
       <div class="category-label" id="sideLabel">SETTING</div>
       <h1 class="main-title" id="sideTitle">캐릭터 생성 및<br>기초 세팅</h1>
-      <div class="creator-credit">[제작 : 혼천교 샵문파]</div>
       <p class="main-desc" id="sideDesc">회상서버를 시작하는 첫걸음! (출처 : 블루님)</p>
       <div class="action-btn">
         <span>상세 가이드 보기</span>
