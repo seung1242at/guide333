@@ -151,46 +151,7 @@
       z-index: 10;
     }
     .category-label { color: var(--accent-green); font-size: 15px; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; }
-    
-    /* 제목 영역을 감싸는 박스와 서버 온오프 표시용 추가 CSS */
-    .title-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      position: relative;
-    }
-    .main-title { font-size: 52px; font-weight: 900; line-height: 1.15; margin: 0; letter-spacing: -2px; position: relative; }
-    
-    /* 서버 상태 표시 배지 스타일 */
-    .server-status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 15px;
-      padding: 6px 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      transition: var(--transition);
-    }
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: #888888; /* 기본값 회색 */
-      box-shadow: 0 0 8px #888888;
-      transition: var(--transition);
-    }
-    /* 온 상태 (노란색) */
-    .server-status-badge.on .status-dot { background-color: #FFD700; box-shadow: 0 0 10px #FFD700; }
-    .server-status-badge.on { color: #FFD700; border-color: rgba(255, 215, 0, 0.3); }
-    /* 오프 상태 (빨간색) */
-    .server-status-badge.off .status-dot { background-color: #FF0000; box-shadow: 0 0 10px #FF0000; }
-    .server-status-badge.off { color: #FF0000; border-color: rgba(255, 0, 0, 0.3); }
-    
+    .main-title { font-size: 52px; font-weight: 900; line-height: 1.15; margin: 0; letter-spacing: -2px; }
     .main-desc { color: var(--text-muted); font-size: 17px; margin: 30px 0 50px; line-height: 1.7; max-width: 480px; }
     
     .action-btn {
@@ -387,13 +348,7 @@
   <div class="main-container">
     <div class="left-panel">
       <div class="category-label" id="sideLabel">SETTING</div>
-      <div class="title-wrapper">
-        <h1 class="main-title" id="sideTitle">캐릭터 생성 및<br>기초 세팅</h1>
-        <div class="server-status-badge" id="serverStatusBadge">
-          <span class="status-dot"></span>
-          <span id="serverStatusText">SERVER CHECKING...</span>
-        </div>
-      </div>
+      <h1 class="main-title" id="sideTitle">캐릭터 생성 및<br>기초 세팅</h1>
       <p class="main-desc" id="sideDesc">회상서버를 시작하는 첫걸음! (출처 : 블루님)</p>
       <div class="action-btn">
         <span>상세 가이드 보기</span>
@@ -403,6 +358,7 @@
 
     <div class="right-panel">
       <div id="displayArea">
+        <!-- 초기 이미지 출력 (압축파일 내 경로) -->
         <img src="images/home.jpeg" class="content-img" onerror="this.src='https://via.placeholder.com/800x1200/111/3fff00?text=HOME+IMAGE'">
       </div>
     </div>
@@ -411,21 +367,1295 @@
   <div class="bottom-footer" id="rotatingTip">TIP: 캐릭터 생성 후 문파 가입하시는걸 추천!!.</div>
 
   <script>
-    // [추가 기능] 프리서버 실시간 ON/OFF 체크 스크립트
-    const SERVER_IP = "183.100.139.82";
-    
-    function updateServerStatus() {
-      const badge = document.getElementById('serverStatusBadge');
-      const text = document.getElementById('serverStatusText');
+    const navBtns = document.querySelectorAll('#mainNav button[data-id]');
+    const basicDropdown = document.getElementById('basicDropdown');
+    const displayArea = document.getElementById('displayArea');
+
+    let excelLoaded = false;
+    let excelLoading = false;
+    let selectedDungeonId = null;
+    let selectedFarmIndex = 0;
+    let dropRows = [];
+    let dungeonRows = [];
+    const dungeonMap = new Map();
+
+    // 엑셀 로딩이 브라우저/캐시 문제로 실패해도 전체 등급이 보이도록 현재 엑셀 데이터를 함께 내장합니다.
+    const fallbackDungeonRows = [
+      {
+            "던전ID": "ice",
+            "던전명": "얼음창고",
+            "설명": ""
+      },
+      {
+            "던전ID": "BU",
+            "던전명": "부유재단",
+            "설명": ""
+      },
+      {
+            "던전ID": "DMT",
+            "던전명": "귀면극단",
+            "설명": ""
+      },
+      {
+            "던전ID": "HTC",
+            "던전명": "부화장",
+            "설명": ""
+      },
+      {
+            "던전ID": "PTS",
+            "던전명": "해적선",
+            "설명": ""
+      },
+      {
+            "던전ID": "NRS",
+            "던전명": "나류성지",
+            "설명": ""
+      },
+      {
+            "던전ID": "TRH",
+            "던전명": "선도원",
+            "설명": ""
+      },
+      {
+            "던전ID": "HGR",
+            "던전명": "제0 격납고",
+            "설명": ""
+      },
+      {
+            "던전ID": "RTP",
+            "던전명": "삼도천",
+            "설명": ""
+      },
+      {
+            "던전ID": "Bc",
+            "던전명": "흑룡교 비밀전당",
+            "설명": ""
+      },
+      {
+            "던전ID": "GG",
+            "던전명": "그루족 고도시",
+            "설명": ""
+      },
+      {
+            "던전ID": "Ba",
+            "던전명": "법기연구소",
+            "설명": ""
+      },
+      {
+            "던전ID": "Up",
+            "던전명": "대정기",
+            "설명": "악세 대정기 드랍정보"
+      },
+      {
+            "던전ID": "Upa",
+            "던전명": "돌파재료",
+            "설명": "악세 돌파재료 드랍정보"
+      }
+];
+    const fallbackDropRows = [
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "영석결정"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "월석결정"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "영단결정"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "선단결정"
+      },
+      {
+            "던전ID": "ice",
+            "등급": "입문",
+            "아이템": "홍문팔각"
+      },
+      {
+            "던전ID": "BU",
+            "등급": "입문",
+            "아이템": "수호보석결정"
+      },
+      {
+            "던전ID": "BU",
+            "등급": "입문",
+            "아이템": "홍문보석결정"
+      },
+      {
+            "던전ID": "BU",
+            "등급": "입문",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "입문",
+            "아이템": "사화강"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "입문",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "사화강"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "상승무혼"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "상승보옥"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "청이린"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "천음목걸이"
+      },
+      {
+            "던전ID": "DMT",
+            "등급": "일반",
+            "아이템": "팔각석류석"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "입문",
+            "아이템": "청이린"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "사화강"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "상승무혼"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "상승보옥"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "청이린"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "천음목걸이"
+      },
+      {
+            "던전ID": "HTC",
+            "등급": "일반",
+            "아이템": "팔각석류석"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "입문",
+            "아이템": "태천주"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "입문",
+            "아이템": "태천강"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "입문",
+            "아이템": "진화석"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "호천조각"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "진화석"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "악태주"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "태천주"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "태천강"
+      },
+      {
+            "던전ID": "PTS",
+            "등급": "일반",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "입문",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "입문",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "입문",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "야만의정기"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "일반",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "적심린파편"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "고급진화석"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "NRS",
+            "등급": "숙련",
+            "아이템": "찬란한수호보석함"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "입문",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "입문",
+            "아이템": "천하조각"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "화룡의비늘"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "황귀린"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "일반",
+            "아이템": "선도원보물함"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "고급진화석"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "수호사성호박옥"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "제천의기운"
+      },
+      {
+            "던전ID": "TRH",
+            "등급": "숙련",
+            "아이템": "제천귀걸이"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "입문",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "입문",
+            "아이템": "천하조각"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "황귀린"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "설영의정기"
+      },
+      {
+            "던전ID": "HGR",
+            "등급": "일반",
+            "아이템": "설영장갑"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "입문",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "입문",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "입문",
+            "아이템": "홍문결정체"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "입문",
+            "아이템": "천하조각"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "홍문수결정"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "수호수결정"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "삼도천목걸이"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "일반",
+            "아이템": "황귀린"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "설풍주"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "고급진화석"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "삼도천허리띠"
+      },
+      {
+            "던전ID": "RTP",
+            "등급": "숙련",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "흑교린"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "적심린"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "장풍허리띠"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "열풍반지"
+      },
+      {
+            "던전ID": "Bc",
+            "등급": "리뉴얼",
+            "아이템": "섬성황강옥"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "적심린"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "강풍장갑"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "돌풍목걸이"
+      },
+      {
+            "던전ID": "GG",
+            "등급": "리뉴얼",
+            "아이템": "삼성석류석상자"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "공허조각"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "적심린"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "선계주"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "용섬조각"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "천부해방석"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "설풍의기운"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "홍문수"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "수호수"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "고귀한홍문각인서"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "대풍귀걸이"
+      },
+      {
+            "던전ID": "Ba",
+            "등급": "리뉴얼",
+            "아이템": "여명팔찌"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "화천장갑 : 설영의 대정기(제0 격납고)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "뇌운 목걸이 : 설영의 대정기(제0 격납고)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "금강허리띠 : 삼도천의 대정기(삼도천)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "설풍 귀걸이 : 삼도천의 대정기(삼도천)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "극X팔찌 : 제천의 대정기(선도원)"
+      },
+      {
+            "던전ID": "Up",
+            "등급": "대정기",
+            "아이템": "설풍 반지 : 신아만의 대정기 (나류성지)"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "3단",
+            "아이템": "무신의 회랑 : 사가령"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "섭무팔찌 : 뒤틀린 천무궁"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "섭무허리띠 : 뒤틀린 천무궁"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "천음 목걸이 : 천명 부화장"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "설영장갑 : 제0 격납고"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "아얀카 반지 : 번개구름"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "6단",
+            "아이템": "아얀카귀걸이 : 번개구름"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "여명팔찌 : 법기 연구소"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "대풍귀걸이 : 법기 연구소"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "돌풍 목걸이 : 그루족 고도시"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "강풍장갑 : 그루족 고도시"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "장풍허리띠 : 흑룡교 비밀전당"
+      },
+      {
+            "던전ID": "Upa",
+            "등급": "9단",
+            "아이템": "열풍 반지 : 흑룡교 비밀전당"
+      }
+];
+
+    const config = {
+      charCreate: { label: 'SETTING', title: '캐릭터 생성', desc: '회상서버를 시작하는 첫걸음! (출처:블루님)', type: 'image', path: 'images/home.jpeg' },
+      divineStone: { label: 'SETTING', title: '신석<br>사용처', desc: '신석을 어디에 사용하면 좋은지 정리하는 전용 메뉴입니다.', type: 'image', path: 'images/divine-stone.JPEG' },
+      badgeGuide: { label: 'SETTING', title: '신공패 / 비공패', desc: '직업별 신공패와 비공패 선택 및 세팅 정보를 확인하세요.', type: 'image', path: 'images/badge-guide.jpeg' },
+      justiceGroup: { label: 'SETTING', title: '의협단', desc: '의협단 성장과 기본 세팅 정보를 확인하는 메뉴입니다.', type: 'image', path: 'images/justice-group.jpeg' },
+      stonePlate: { label: 'SETTING', title: '석판', desc: '석판 관련 기초 세팅과 활용 정보를 확인하는 메뉴입니다.', type: 'image', path: 'images/stone-plate.jpeg' },
+      start: { label: 'FARMING', title: '초반 파밍<br>장비 가이드', desc: '장비를 업글하는 효율적인 성장 루트입니다.', type: 'farm' },
+      control: { label: 'DATABASE', title: '던전별 아이템<br>드랍 리스트', desc: '던전명이나 아이템명을 검색하여 드랍 정보를 확인하세요.', type: 'drop' },
+      class: { label: 'CLAN', title: '각 세력별<br>문파 소개', desc: '함께할 동료를 찾으시나요? 대표 문파 정보를 확인하세요.', type: 'image', path: 'images/class.jpeg' },
+      faq: { label: 'OPTION', title: '게임UI설정 및<br>저장 방법', desc: '쾌적한 플레이를 위한 필수적인 게임 내부 설정 가이드입니다.', type: 'image', path: 'images/faq.jpeg' },
+      extra: { label: 'FAQ', title: '초보자<br>자주 묻는 질문', desc: '서버내 자주묻는 질문들을 모아봤습니다!(출처:블루님).', type: 'image', path: 'images/extra.jpeg' }
+    };
+
+    const farmingSteps = [
+      { title: '천상분지', image: 'images/farm/01-skyfield.jpeg', desc: '천상분지.' },
+      { title: '흑룡의환영', image: 'images/farm/02-blackdragon.jpeg', desc: '흑룡의환영' },
+      { title: '얼음창고', image: 'images/farm/03-icewarehouse.jpeg', desc: '얼음창고' },
+      { title: '부유재단', image: 'images/farm/04-floatingaltar.jpeg', desc: '부유재단' },
+      { title: '저주받은해적선', image: 'images/farm/05-pirateship.jpeg', desc: '저주받은해적선' },
+      { title: '천명부화장', image: 'images/farm/06-destinygrave.jpeg', desc: '천명부화장' },
+      { title: '귀면극단', image: 'images/farm/07-masktheater.jpeg', desc: '귀면극단' }
+    ];
+
+    function renderFarmingGuide() {
+      const currentStep = farmingSteps[selectedFarmIndex] || farmingSteps[0];
+      const buttons = farmingSteps.map((step, index) =>
+        '<button class="farm-top-btn ' + (index === selectedFarmIndex ? 'active' : '') + '" data-index="' + index + '">' + step.title + '</button>'
+      ).join('');
+
+      displayArea.innerHTML =
+        '<div class="farm-button-wrap" id="farmButtonWrap">' + buttons + '</div>' +
+        '<article class="farm-detail">' +
+          '<div class="farm-detail-head">' +
+            '<h3>' + currentStep.title + '</h3>' +
+            '<span class="farm-badge">' + String(selectedFarmIndex + 1).padStart(2, '0') + ' / ' + String(farmingSteps.length).padStart(2, '0') + '</span>' +
+          '</div>' +
+          '<p>' + currentStep.desc + '</p>' +
+          '<img src="' + currentStep.image + '" alt="' + currentStep.title + '" onerror="this.style.display=\'none\'">' +
+        '</article>';
+
+      document.querySelectorAll('#farmButtonWrap .farm-top-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          selectedFarmIndex = Number(button.dataset.index);
+          renderFarmingGuide();
+        });
+      });
+    }
+
+    function switchView(id) {
+      const data = config[id];
+      if (!data) return;
+
+      navBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.id === id));
+      const isBasicMenu = ['charCreate', 'divineStone', 'badgeGuide', 'justiceGroup', 'stonePlate'].includes(id);
+      if (basicDropdown) {
+        basicDropdown.classList.toggle('active', isBasicMenu);
+        const toggle = basicDropdown.querySelector('.dropdown-toggle');
+        if (toggle) toggle.setAttribute('aria-expanded', String(isBasicMenu));
+      }
       
-      // 공개 포트/핑 체크 프록시 API 활용 (CORS 우회 및 브라우저 환경 지원)
-      fetch(`https://api.ping.gg/ping/${SERVER_IP}`)
-        .then(response => response.json())
-        .then(data => {
-          // 응답 성공 여부 파악 (온/오프 판별)
-          if (data && data.success) {
-            badge.className = "server-status-badge on";
-            text.textContent = "SERVER ON";
-          } else {
-            badge.className = "server-status-badge off";
-            text.textContent =
+      document.getElementById('sideLabel').textContent = data.label;
+      document.getElementById('sideTitle').innerHTML = data.title;
+      document.getElementById('sideDesc').textContent = data.desc;
+
+      displayArea.innerHTML = '';
+      if (data.type === 'image') {
+        displayArea.innerHTML = `<img src="${data.path}" class="content-img" onerror="this.src='https://via.placeholder.com/800x1000/111/3fff00?text=IMAGE+NOT+FOUND'">`;
+      } else if (data.type === 'farm') {
+        renderFarmingGuide();
+      } else if (data.type === 'drop') {
+        renderDropSearch();
+      }
+    }
+
+    function cellText(value) {
+      return value === undefined || value === null ? '' : String(value).trim();
+    }
+
+    function sheetToObjects(sheet) {
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+      if (!rows.length) return [];
+      const headers = rows[0].map(cellText);
+      return rows.slice(1)
+        .filter(row => row.some(value => cellText(value) !== ''))
+        .map(row => {
+          const obj = {};
+          headers.forEach((header, index) => {
+            if (header) obj[header] = cellText(row[index]);
+          });
+          return obj;
+        });
+    }
+
+    function normalizeDropData(sourceDungeonRows, sourceDropRows) {
+      const ignoredDungeonIds = new Set(['번골']);
+
+      dungeonMap.clear();
+      dungeonRows = (sourceDungeonRows || [])
+        .map(row => ({
+          '던전ID': cellText(row['던전ID']),
+          '던전명': cellText(row['던전명']),
+          '설명': cellText(row['설명'])
+        }))
+        .filter(row => row['던전ID'] && !ignoredDungeonIds.has(row['던전ID']));
+
+      dungeonRows.forEach(row => {
+        const id = cellText(row['던전ID']);
+        if (id) dungeonMap.set(id.toUpperCase(), cellText(row['던전명']) || id);
+      });
+
+      dropRows = (sourceDropRows || [])
+        .map(row => {
+          const dungeonId = cellText(row['던전ID']);
+          const dungeonKey = dungeonId.toUpperCase();
+          return {
+            dungeonId,
+            dungeonKey,
+            dungeonName: dungeonMap.get(dungeonKey) || dungeonId,
+            grade: normalizeGrade(row['등급']),
+            item: cellText(row['아이템'])
+          };
+        })
+        .filter(row => row.dungeonId && row.item && !ignoredDungeonIds.has(row.dungeonId));
+
+      const firstVisible = getVisibleDungeons()[0];
+      selectedDungeonId = firstVisible?.id || dropRows[0]?.dungeonKey || null;
+    }
+
+    async function loadExcelData() {
+      if (excelLoaded || excelLoading) return;
+      excelLoading = true;
+      try {
+        if (typeof XLSX === 'undefined') {
+          throw new Error('XLSX 라이브러리를 불러오지 못했습니다. 내장 데이터를 사용합니다.');
+        }
+
+        const response = await fetch(`data/info_search_data.xlsx?v=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`엑셀 파일을 찾을 수 없습니다. 경로: data/info_search_data.xlsx (${response.status})`);
+        }
+
+        const buffer = await response.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array', cellDates: false, raw: false });
+        const dungeonSheet = workbook.Sheets['던전목록'];
+        const dropSheet = workbook.Sheets['드랍목록'];
+
+        if (!dungeonSheet || !dropSheet) {
+          throw new Error('필수 시트명(던전목록, 드랍목록)을 찾을 수 없습니다.');
+        }
+
+        normalizeDropData(sheetToObjects(dungeonSheet), sheetToObjects(dropSheet));
+        excelLoaded = true;
+      } catch (error) {
+        console.warn('[drop-data] 엑셀 로딩 실패, 내장 데이터로 대체합니다:', error);
+        normalizeDropData(fallbackDungeonRows, fallbackDropRows);
+        excelLoaded = true;
+      } finally {
+        excelLoading = false;
+      }
+    }
+
+    function getVisibleDungeons() {
+      const ids = new Set(dropRows.map(row => row.dungeonKey));
+      const fromDungeonSheet = dungeonRows
+        .map(row => ({ id: cellText(row['던전ID']).toUpperCase(), name: cellText(row['던전명']) }))
+        .filter(row => row.id && ids.has(row.id));
+
+      const missing = [...ids]
+        .filter(id => !fromDungeonSheet.some(row => row.id === id))
+        .map(id => ({ id, name: dungeonMap.get(id) || id }));
+
+      return [...fromDungeonSheet, ...missing];
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[char]));
+    }
+
+    const gradeDisplayOrder = ['입문', '일반', '숙련', '리뉴얼', '대정기', '3단', '6단', '9단', '기타'];
+
+    function normalizeGrade(grade) {
+      const text = cellText(grade);
+      if (!text) return '기타';
+      if (text.includes('입문')) return '입문';
+      if (text.includes('일반')) return '일반';
+      if (text.includes('숙련')) return '숙련';
+      if (text.includes('리뉴얼')) return '리뉴얼';
+      if (text.includes('대정기')) return '대정기';
+      if (/3\s*단/.test(text)) return '3단';
+      if (/6\s*단/.test(text)) return '6단';
+      if (/9\s*단/.test(text)) return '9단';
+      return text;
+    }
+
+    function normalizeSearchText(value) {
+      return cellText(value).toLowerCase().replace(/\s+/g, '');
+    }
+
+    function rowMatchesKeyword(row, keyword) {
+      const rawKeyword = cellText(keyword).toLowerCase();
+      const compactKeyword = normalizeSearchText(keyword);
+      if (!compactKeyword) return true;
+
+      const haystack = `${row.dungeonName} ${row.grade} ${row.item}`;
+      const rawHaystack = haystack.toLowerCase();
+      const compactHaystack = normalizeSearchText(haystack);
+
+      return rawHaystack.includes(rawKeyword) || compactHaystack.includes(compactKeyword);
+    }
+
+    function buildDungeonGradeGroups(rows) {
+      const dungeonGroups = new Map();
+      rows.forEach(row => {
+        const dungeonKey = row.dungeonKey || row.dungeonName;
+        if (!dungeonGroups.has(dungeonKey)) {
+          dungeonGroups.set(dungeonKey, {
+            dungeonKey,
+            dungeonName: row.dungeonName,
+            grades: {},
+            total: 0
+          });
+        }
+
+        const group = dungeonGroups.get(dungeonKey);
+        const grade = normalizeGrade(row.grade);
+        if (!group.grades[grade]) group.grades[grade] = [];
+        group.grades[grade].push(row.item);
+        group.total += 1;
+      });
+
+      const dungeonOrder = new Map(getVisibleDungeons().map((dungeon, index) => [dungeon.id, index]));
+      return [...dungeonGroups.values()].sort((a, b) => {
+        const orderA = dungeonOrder.has(a.dungeonKey) ? dungeonOrder.get(a.dungeonKey) : 999999;
+        const orderB = dungeonOrder.has(b.dungeonKey) ? dungeonOrder.get(b.dungeonKey) : 999999;
+        if (orderA !== orderB) return orderA - orderB;
+        return cellText(a.dungeonName).localeCompare(cellText(b.dungeonName), 'ko');
+      });
+    }
+
+    function uniqueItems(items) {
+      return [...new Set(items.filter(Boolean))];
+    }
+
+    function getOrderedGradeTitles(grades) {
+      const titles = Object.keys(grades).filter(title => uniqueItems(grades[title]).length > 0);
+      const known = gradeDisplayOrder.filter(title => titles.includes(title));
+      const unknown = titles
+        .filter(title => !gradeDisplayOrder.includes(title))
+        .sort((a, b) => a.localeCompare(b, 'ko'));
+      return [...known, ...unknown];
+    }
+
+    function renderGradeColumn(title, items) {
+      const unique = uniqueItems(items);
+      return `
+        <section class="drop-grade-col">
+          <div class="drop-grade-title">${escapeHtml(title)}</div>
+          <div class="drop-item-list">
+            ${unique.length
+              ? unique.map(item => `<div class="drop-item-chip">${escapeHtml(item)}</div>`).join('')
+              : '<div class="drop-empty">드랍 정보 없음</div>'
+            }
+          </div>
+        </section>
+      `;
+    }
+
+    function renderDropTable() {
+      const searchInput = document.getElementById('dropSearchInput');
+      const keyword = searchInput?.value.trim() || '';
+      const isGlobalSearch = keyword.length > 0;
+
+      // Important: global search mode NEVER uses selectedDungeonId.
+      // Empty search mode is the only time the selected dungeon tab is applied.
+      const rows = isGlobalSearch
+        ? dropRows.filter(row => rowMatchesKeyword(row, keyword))
+        : dropRows.filter(row => !selectedDungeonId || row.dungeonKey === selectedDungeonId);
+
+      const resultArea = document.getElementById('dropResultArea');
+      const counter = document.getElementById('dropCounter');
+      const modeText = document.getElementById('dropSearchModeText');
+      const tabs = document.getElementById('dungeonTabs');
+      if (!resultArea) return;
+
+      document.querySelectorAll('#dungeonTabs .tab-item').forEach(tab => {
+        tab.classList.toggle('active', !isGlobalSearch && tab.dataset.id === selectedDungeonId);
+      });
+      if (tabs) tabs.classList.toggle('search-mode', isGlobalSearch);
+
+      if (modeText) {
+        modeText.innerHTML = isGlobalSearch
+          ? '<strong>\uc804\uccb4 \ub358\uc804 \uac80\uc0c9 \uc911</strong> - \uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubaa8\ub4e0 \ub358\uc804\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4. \ub358\uc804 \ud0ed \uc120\ud0dd\uc740 \uac80\uc0c9 \uacb0\uacfc\uc5d0 \uc801\uc6a9\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.'
+          : '<strong>\uc120\ud0dd\ud55c \ub358\uc804 \ubcf4\uae30</strong> - \uac80\uc0c9\uc5b4\uac00 \uc5c6\uc744 \ub54c\ub9cc \uc120\ud0dd\ud55c \ub358\uc804\uc758 \ub4dc\ub78d \ubaa9\ub85d\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4.';
+      }
+
+      const groups = buildDungeonGradeGroups(rows);
+      if (counter) {
+        counter.textContent = isGlobalSearch
+          ? `${groups.length.toLocaleString()}\uac1c \ub358\uc804 / ${rows.length.toLocaleString()}\uac1c \ud56d\ubaa9`
+          : `${rows.length.toLocaleString()}\uac1c \ud56d\ubaa9`;
+      }
+
+      if (!rows.length) {
+        resultArea.innerHTML = '<div style="padding:22px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;background:#111;color:#888;text-align:center;">\uac80\uc0c9 \uacb0\uacfc\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.</div>';
+        return;
+      }
+
+      resultArea.innerHTML = `
+        <div class="drop-group-wrap">
+          ${groups.map(group => `
+            <article class="drop-dungeon-card">
+              <div class="drop-dungeon-title">
+                <span>${escapeHtml(group.dungeonName)}</span>
+                <small>${group.total.toLocaleString()}개 항목</small>
+              </div>
+              <div class="drop-grade-grid">
+                ${getOrderedGradeTitles(group.grades)
+                  .map(title => renderGradeColumn(title, group.grades[title] || []))
+                  .join('')}
+              </div>
+            </article>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    async function renderDropSearch() {
+      displayArea.innerHTML = `
+        <div style="padding:22px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;background:#111;color:#aaa;">엑셀 데이터를 불러오는 중입니다...</div>
+      `;
+
+      await loadExcelData();
+      if (!excelLoaded) return;
+
+      const dungeons = getVisibleDungeons();
+      if (!selectedDungeonId && dungeons.length) selectedDungeonId = dungeons[0].id;
+
+      displayArea.innerHTML = `
+        <input type="text" id="dropSearchInput" class="search-box" placeholder="🔍 재료명 / 아이템명 검색 시 전체 던전에서 검색됩니다...">
+        <div id="dropSearchModeText" class="drop-search-status"></div>
+        <div class="dungeon-tabs" id="dungeonTabs">
+          ${dungeons.map((dungeon, index) => `
+            <div class="tab-item ${dungeon.id === selectedDungeonId || (!selectedDungeonId && index === 0) ? 'active' : ''}" data-id="${dungeon.id}">${dungeon.name}</div>
+          `).join('')}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:#aaa;font-size:13px;">
+          <span>출처: data/info_search_data.xlsx <small style="color:#777;">(리뉴얼/대정기/3단/6단/9단 포함)</small></span>
+          <span id="dropCounter"></span>
+        </div>
+        <div id="dropResultArea"></div>
+      `;
+
+      document.getElementById('dropSearchInput').addEventListener('input', renderDropTable);
+      document.querySelectorAll('#dungeonTabs .tab-item').forEach(tab => {
+        tab.addEventListener('click', () => {
+          selectedDungeonId = tab.dataset.id;
+          const searchInput = document.getElementById('dropSearchInput');
+          if (searchInput && searchInput.value.trim()) searchInput.value = '';
+          renderDropTable();
+        });
+      });
+      renderDropTable();
+    }
+
+    navBtns.forEach(btn => btn.onclick = () => switchView(btn.dataset.id));
+    const dropdownToggle = document.querySelector('#basicDropdown .dropdown-toggle');
+    if (dropdownToggle) dropdownToggle.onclick = () => switchView('charCreate');
+
+    // 팁 로테이션
+    const tips = ["TIP: 홍보 보상은 매일 자정에 초기화됩니다.", "TIP: 문파에 가입하여 함께 던전을 돌아보아요~"];
+    let tIdx = 0;
+    setInterval(() => {
+      tIdx = (tIdx + 1) % tips.length;
+      document.getElementById('rotatingTip').textContent = tips[tIdx];
+    }, 5000);
+  </script>
+</body>
+</html>
