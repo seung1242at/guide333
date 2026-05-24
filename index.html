@@ -259,6 +259,43 @@
     .drop-item-chip { color: #d8d8d8; background: #111; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 9px 10px; font-size: 13px; line-height: 1.35; word-break: keep-all; }
     .drop-empty { color: #666; font-size: 13px; padding: 9px 0; }
 
+
+    /* 서버 상태 패널 */
+    .server-status-box {
+      position: fixed;
+      top: 105px;
+      left: max(var(--page-gutter), calc((100vw - var(--page-max)) / 2 + 24px));
+      z-index: 1100;
+      width: 250px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.45);
+    }
+    .server-status-title {
+      font-size: 14px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+    .server-line {
+      display:flex;
+      justify-content:space-between;
+      margin:8px 0;
+      color:#ccc;
+      font-size:13px;
+    }
+    .server-online { color: #3fff00; font-weight:800; }
+    .server-offline { color: #ff4d4d; font-weight:800; }
+    .server-player {
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px solid rgba(255,255,255,0.08);
+      font-size:13px;
+      color:#ddd;
+    }
+
     /* 하단 팁 */
     .bottom-footer {
       position: fixed;
@@ -344,6 +381,23 @@
       <button data-id="extra">FAQ</button>
     </nav>
   </header>
+
+  
+  <div class="server-status-box">
+    <div class="server-status-title">🖥 서버 상태</div>
+    <div class="server-line">
+      <span>로그인 서버</span>
+      <span id="loginStatus" class="server-offline">확인중...</span>
+    </div>
+    <div class="server-line">
+      <span>게임 서버</span>
+      <span id="gameStatus" class="server-offline">확인중...</span>
+    </div>
+    <div class="server-player">
+      접속자 수 : <strong id="playerCount">0명</strong>
+    </div>
+  </div>
+
 
   <div class="main-container">
     <div class="left-panel">
@@ -1656,6 +1710,34 @@
       tIdx = (tIdx + 1) % tips.length;
       document.getElementById('rotatingTip').textContent = tips[tIdx];
     }, 5000);
+
+
+    // 서버 상태 표시 (API 연결 전 테스트용)
+    async function updateServerStatus() {
+      try {
+        // 실제 API 연결 전 임시 데이터
+        const mockData = {
+          login: true,
+          game: true,
+          players: 37
+        };
+
+        document.getElementById('loginStatus').textContent = mockData.login ? '🟢 ONLINE' : '🔴 OFFLINE';
+        document.getElementById('loginStatus').className = mockData.login ? 'server-online' : 'server-offline';
+
+        document.getElementById('gameStatus').textContent = mockData.game ? '🟢 ONLINE' : '🔴 OFFLINE';
+        document.getElementById('gameStatus').className = mockData.game ? 'server-online' : 'server-offline';
+
+        document.getElementById('playerCount').textContent = mockData.players + '명';
+
+      } catch (e) {
+        console.error('서버 상태 확인 실패', e);
+      }
+    }
+
+    updateServerStatus();
+    setInterval(updateServerStatus, 10000);
+
   </script>
 </body>
 </html>
