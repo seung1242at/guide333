@@ -1339,6 +1339,58 @@
       extra: { label: 'FAQ', title: '초보자<br>자주 묻는 질문', desc: '서버내 자주묻는 질문들을 모아봤습니다!(출처:블루님).', type: 'image', path: 'images/extra.jpeg' }
     };
 
+    // 런처 및 외부 링크에서 메뉴별로 바로 열 수 있도록 해시 URL을 지원합니다.
+    // 예: #character, #farming, #drops, #settings, #faq
+    const routeAliases = {
+      'character': 'charCreate',
+      'divine-stone': 'divineStone',
+      'badge': 'badgeGuide',
+      'justice': 'justiceGroup',
+      'stone': 'stonePlate',
+      'farming': 'start',
+      'drops': 'control',
+      'guild': 'class',
+      'settings': 'faq',
+      'faq': 'extra'
+    };
+
+    const routeByMenuId = {
+      charCreate: 'character',
+      divineStone: 'divine-stone',
+      badgeGuide: 'badge',
+      justiceGroup: 'justice',
+      stonePlate: 'stone',
+      start: 'farming',
+      control: 'drops',
+      class: 'guild',
+      faq: 'settings',
+      extra: 'faq'
+    };
+
+    function getMenuIdFromHash() {
+      const route = decodeURIComponent(location.hash.replace(/^#\/?/, '').split('?')[0]).trim();
+      if (!route) return 'charCreate';
+      if (config[route]) return route; // 기존 data-id 해시도 호환
+      return routeAliases[route] || 'charCreate';
+    }
+
+    function openMenuRoute(menuId, replace = false) {
+      const route = routeByMenuId[menuId] || menuId;
+      const targetHash = '#' + route;
+
+      if (location.hash === targetHash) {
+        switchView(menuId);
+        return;
+      }
+
+      if (replace) {
+        history.replaceState(null, '', targetHash);
+        switchView(menuId);
+      } else {
+        location.hash = route;
+      }
+    }
+
     const farmingSteps = [
       { title: '천상분지', image: 'images/farm/01-skyfield.jpeg', desc: '천상분지.' },
       { title: '흑룡의환영', image: 'images/farm/02-blackdragon.jpeg', desc: '흑룡의환영' },
@@ -1696,9 +1748,12 @@
       renderDropTable();
     }
 
-    navBtns.forEach(btn => btn.onclick = () => switchView(btn.dataset.id));
+    navBtns.forEach(btn => btn.onclick = () => openMenuRoute(btn.dataset.id));
     const dropdownToggle = document.querySelector('#basicDropdown .dropdown-toggle');
-    if (dropdownToggle) dropdownToggle.onclick = () => switchView('charCreate');
+    if (dropdownToggle) dropdownToggle.onclick = () => openMenuRoute('charCreate');
+
+    window.addEventListener('hashchange', () => switchView(getMenuIdFromHash()));
+    openMenuRoute(getMenuIdFromHash(), true);
 
     // 팁 로테이션
     const tips = ["TIP: 홍보 보상은 매일 자정에 초기화됩니다.", "TIP: 문파에 가입하여 함께 던전을 돌아보아요~"];
